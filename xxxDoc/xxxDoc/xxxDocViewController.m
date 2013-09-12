@@ -7,11 +7,15 @@
 //
 
 #import "xxxDocViewController.h"
-#import "xxxDocTextView.h"
-
 #import <QuartzCore/QuartzCore.h>
+#import "xxxDocChangeSet.h"
 
 @interface xxxDocViewController ()
+
+// Array store all operation done by all user, both global and local
+@property NSMutableArray *operationArray;
+// The index of the last global operation.
+@property NSNumber *globalOperationNumber;
 
 @end
 
@@ -59,7 +63,7 @@
     [self.view addSubview:buttonView];
     
     double textViewOffset = 10.f;
-    xxxDocTextView *textView = [[xxxDocTextView alloc]initWithFrame:CGRectMake(0.f, buttonViewHeight + textViewOffset, width, height - buttonViewHeight - textViewOffset)];
+    UITextView *textView = [[UITextView alloc]initWithFrame:CGRectMake(0.f, buttonViewHeight + textViewOffset, width, height - buttonViewHeight - textViewOffset)];
     textView.delegate = self;
     [self.view addSubview:textView];
 }
@@ -90,13 +94,40 @@
     NSLog(@"Redo\n");
 }
 
+
+// creat an Change Set which contains all local operation user have made.
+// Mark the operation state as sended.
+- (xxxDocChangeSet*) getLocalChangeSet
+{
+    xxxDocChangeSet* result;
+    
+    return result;
+}
+
+// TODO: confirm a set of operation, detail to be determined.
+- (void) confirmOperation
+{
+
+
+}
+
+// apply a new change set to current operation array.
+- (void) applyChangeSet: (xxxDocChangeSet*) newChangeSet
+{
+    
+}
+
+
 #pragma mark UITextViewDelegate Protocol Methods
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
+    // 1. Create operation.
+    // 2. Add replacement info into operation.
+    // 3. put operation into operation array.
     if (text.length == 0){
         NSLog(@"Delete: %@", [textView.text substringWithRange:range]);
-        NSLog(@"delete");
+
     }
     else if (range.length == 0){
         NSLog(@"Insert: %@", text);
