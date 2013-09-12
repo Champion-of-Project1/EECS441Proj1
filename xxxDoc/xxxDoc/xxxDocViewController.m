@@ -60,6 +60,7 @@
     
     double textViewOffset = 10.f;
     xxxDocTextView *textView = [[xxxDocTextView alloc]initWithFrame:CGRectMake(0.f, buttonViewHeight + textViewOffset, width, height - buttonViewHeight - textViewOffset)];
+    textView.delegate = self;
     [self.view addSubview:textView];
 }
 
@@ -87,6 +88,23 @@
 - (void)redoAct: (UIButton *)redoButton
 {
     NSLog(@"Redo\n");
+}
+
+#pragma mark UITextViewDelegate Protocol Methods
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+    if (text.length == 0){
+        NSLog(@"Delete: %@", [textView.text substringWithRange:range]);
+        NSLog(@"delete");
+    }
+    else if (range.length == 0){
+        NSLog(@"Insert: %@", text);
+    }
+    else{
+        NSLog(@"replace %@ by %@",[textView.text substringWithRange:range],text);
+    }
+    return YES;
 }
 
 @end

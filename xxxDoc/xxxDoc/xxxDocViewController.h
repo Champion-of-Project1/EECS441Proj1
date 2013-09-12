@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface xxxDocViewController : UIViewController
+@interface xxxDocViewController : UIViewController <UITextViewDelegate>
 
 @end
