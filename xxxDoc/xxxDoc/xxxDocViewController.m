@@ -9,17 +9,48 @@
 #import "xxxDocViewController.h"
 #import <QuartzCore/QuartzCore.h>
 #import "xxxDocChangeSet.h"
+#import "xxxDocOperation.h"
 
 @interface xxxDocViewController ()
 
 // Array store all operation done by all user, both global and local
-@property NSMutableArray *operationArray;
+@property (strong, nonatomic) NSMutableArray *operationArray;
+
+// The stack store the operation that can be redo.
+// Clear the stack once user have new input.
+@property (strong, nonatomic) NSMutableArray *redoStack;
+
 // The index of the last global operation.
-@property NSNumber *globalOperationNumber;
+@property (strong, nonatomic) NSNumber *globalOperationNumber;
+
+// The user's session ID
+@property (nonatomic) int sessionID;
+
+// The user's input view.
+@property (weak, nonatomic) UITextView *inputTextView;
 
 @end
 
 @implementation xxxDocViewController
+
+@synthesize operationArray = _operationArray;
+@synthesize globalOperationNumber = _globalOperationNumber;
+
+- (NSMutableArray*) operationArray
+{
+    if (_operationArray == nil){
+        _operationArray = [[NSMutableArray alloc] init];
+    }
+    return _operationArray;
+}
+
+- (NSMutableArray*) redoStack
+{
+    if (_redoStack == nil){
+        _redoStack = [[NSMutableArray alloc] init];
+    }
+    return _redoStack;
+}
 
 - (void)viewDidLoad
 {
@@ -65,7 +96,11 @@
     double textViewOffset = 10.f;
     UITextView *textView = [[UITextView alloc]initWithFrame:CGRectMake(0.f, buttonViewHeight + textViewOffset, width, height - buttonViewHeight - textViewOffset)];
     textView.delegate = self;
+    self.inputTextView = textView;
     [self.view addSubview:textView];
+    
+    // TODO: test code.
+    self.sessionID = 0;
 }
 
 - (void)didReceiveMemoryWarning
@@ -86,11 +121,65 @@
 
 - (void)undoAct: (UIButton *)undoButton
 {
-    NSLog(@"Undo\n");
+    // get last operation that is done by this user from operataion array.
+    xxxDocOperation *op;
+    for (int i = self.globalOperationNumber.intValue - 1; i >= 0 ; i--) {
+        op = [self.operationArray objectAtIndex:i];
+        // TODO: the state of op should be GLOBAL
+        if (op.sessionID == self.sessionID && op.state != UNDO){
+            break;
+        }
+    }
+    
+    // If no available operation, do nothing. TODO: user a more graceful response.
+    if (op == nil){
+        return;
+    }
+    
+    // TODO: this should be done after the server confirmed, put into completion handler.
+    // undo the operation.
+    
+    // Get the replace start and end point by translate the index.
+    int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGobalIndex:op.range.location];
+    int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGobalIndex:(op.range.location + op.replcaceString.length)];
+    NSRange replaceRange;
+    replaceRange.location = startIndex;
+    replaceRange.length = endIndex - startIndex;
+    // replace the string
+    self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:replaceRange withString:op.originalString];
+    
+    // update the operation to redo stack, operation array and global counter
+    [self.redoStack addObject:op];
+    op.state = UNDO;
+    self.globalOperationNumber = [NSNumber numberWithInt:(self.globalOperationNumber.intValue - 1)];
 }
 
 - (void)redoAct: (UIButton *)redoButton
 {
+    // get last operation that is done by this user from redo stack.
+    xxxDocOperation *op;
+    if (self.redoStack.count == 0){
+        return;
+    }
+    else{
+        op = [self.redoStack lastObject];
+    }
+    
+    // redo the operation.
+    int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGobalIndex:op.range.location];
+    int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGobalIndex:(op.range.location + op.range.length)];
+    NSRange replaceRange;
+    replaceRange.location = startIndex;
+    replaceRange.length = endIndex - startIndex;
+    // replace the string
+    self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:replaceRange withString:op.replcaceString];
+
+    // update the operation to redo stack, operation array and global counter
+    [self.redoStack removeObject:op];
+    op.state = LOCAL;
+    self.globalOperationNumber = [NSNumber numberWithInt:(self.globalOperationNumber.intValue + 1)];
+    
+    
     NSLog(@"Redo\n");
 }
 
@@ -117,17 +206,39 @@
     
 }
 
+- (int) getLocalIndexByGlobalOperationID: (int) globalID
+                           andGobalIndex: (int) index
+{
+    int result = 0;
+    
+    result = index;
+    
+    return result;
+}
+
 
 #pragma mark UITextViewDelegate Protocol Methods
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
     // 1. Create operation.
+    xxxDocOperation* operation = [[xxxDocOperation alloc] init];
+    
     // 2. Add replacement info into operation.
+    operation.range = range;
+    operation.replcaceString = text;
+    operation.originalString = [textView.text substringWithRange:range];
+    
     // 3. put operation into operation array.
+    [self.operationArray addObject:operation];
+    
+    // TODO: test code. Update global counter.
+    self.globalOperationNumber = [NSNumber numberWithInt: self.globalOperationNumber.intValue + 1];
+    
+    
+    /* TODO: test code */
     if (text.length == 0){
         NSLog(@"Delete: %@", [textView.text substringWithRange:range]);
-
     }
     else if (range.length == 0){
         NSLog(@"Insert: %@", text);
@@ -135,6 +246,7 @@
     else{
         NSLog(@"replace %@ by %@",[textView.text substringWithRange:range],text);
     }
+    
     return YES;
 }
 
