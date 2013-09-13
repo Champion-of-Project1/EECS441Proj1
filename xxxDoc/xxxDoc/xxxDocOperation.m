@@ -14,9 +14,11 @@
 @synthesize replcaceString = _replcaceString;
 @synthesize range = _range;
 @synthesize state = _state;
-@synthesize sessionID = _sessionID;
+@synthesize participantID = _participantID;
 @synthesize operationID = _operationID;
 
+static int nextID = 0;
+ 
 - (NSString *) originalString
 {
     if (_originalString == nil){
@@ -38,9 +40,24 @@
     self = [super init];
     // get a unique operation ID
     self.state = LOCAL;
-    
+    self.operationID = [self.class getOperationID];
     
     return self;
+}
+
+- (xxxDocOperation *) initWithNoOperationID
+{
+    self = [super init];
+    // get a unique operation ID
+    self.state = LOCAL;
+    
+    return self;
+}
+
+// Get an globally unique operation ID
++ (int) getOperationID
+{
+    return nextID++;
 }
    
 @end

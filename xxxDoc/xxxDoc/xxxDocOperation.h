@@ -32,6 +32,13 @@
 // The format: 
 @property (nonatomic) int operationID;
 
-@property (nonatomic) int sessionID;
+// The ID of the user who make this operation.
+@property (nonatomic) int64_t participantID;
+
+// initialize an operation but no set the operationID
+- (xxxDocOperation *) initWithNoOperationID;
+
+// Get an globally unique ID
++ (int) getOperationID;
 
 @end

@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "xxxDocChangeSet.h"
 #import "xxxDocOperation.h"
+#import "xxxDocCollabrifyWorker.h"
 
 @interface xxxDocViewController ()
 
@@ -24,7 +25,7 @@
 @property (strong, nonatomic) NSNumber *globalOperationNumber;
 
 // The user's session ID
-@property (nonatomic) int sessionID;
+@property (nonatomic) int64_t sessionID;
 
 // The user's input view.
 @property (weak, nonatomic) UITextView *inputTextView;
@@ -105,7 +106,7 @@
     [self.view addSubview:textView];
     
     // TODO: test code.
-    self.sessionID = 0;
+    self.sessionID = [xxxDocCollabrifyWorker getCollabrifyClient].participantID;
 }
 
 - (void)didReceiveMemoryWarning
@@ -122,26 +123,28 @@
 
 - (void)moveChars: (UIButton *)moveButton
 {
-    xxxDocOperation* operation = [[xxxDocOperation alloc] init];
+    static int operationID = 0;
+    xxxDocOperation* operation = [[xxxDocOperation alloc] initWithNoOperationID];
     if (!moveButton.selected) {
+        // Get a new operation ID if it is a new move action.
+        operationID = [xxxDocOperation getOperationID];
+        operation.operationID = operationID;
         if (![self.inputTextView selectedRange].length) {
             NSLog(@"No text selected!");
             return;
         }
         // Delete the selected text
-        // TODO: OPERATION ID
         operation.range = [self.inputTextView selectedRange];
         operation.replcaceString = @"";
         operation.originalString = [self.inputTextView.text substringWithRange:operation.range];
         operation.state = LOCAL;
-        [self.operationArray addObject:operation];
         self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:operation.range withString:operation.replcaceString];
         NSLog(@"Delete text in Move: %@", operation.originalString);
         self.selectedText = operation.originalString;
     }
     else {
+        operation.operationID = operationID;
         // Add to another place
-        // TODO: OPERATION ID
         if ([self.inputTextView selectedRange].length) {
             NSLog(@"No cursor location specified!");
             return;
@@ -150,21 +153,25 @@
         operation.replcaceString = self.selectedText;
         operation.originalString = @"";
         operation.state = LOCAL;
-        [self.operationArray addObject:operation];
         self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:operation.range withString:operation.replcaceString];
         NSLog(@"Add text in Move: %@", operation.replcaceString);
     }
     [moveButton setSelected:!moveButton.selected];
+    
+    [self addOperationToOperationArray:operation];
 }
 
 - (void)undoAct: (UIButton *)undoButton
 {
     // get last operation that is done by this user from operataion array.
     xxxDocOperation *op;
+    int operationIndex = 0;
+    int operationID = 0;
     for (int i = self.globalOperationNumber.intValue - 1; i >= 0 ; i--) {
         op = [self.operationArray objectAtIndex:i];
-        // TODO: the state of op should be GLOBAL
-        if (op.sessionID == self.sessionID && op.state != UNDO){
+        if (op.participantID == self.sessionID && op.state == GLOBAL){
+            operationIndex = i;
+            operationID = op.operationID;
             break;
         }
     }
@@ -174,6 +181,20 @@
         return;
     }
     
+    // Get all operation has the same ID and undo one by one.
+    for (int i = operationIndex; i >= 0 ; i--) {
+        op = [self.operationArray objectAtIndex:i];
+        if (op.operationID == operationID){
+            [self undoOperation:op];
+        }
+    }
+}
+
+// Undo an operation, take an operation as input.
+// The operation must exist in the stack.
+// The operation will be mark as UNDO, but ot delete from stack.
+- (void)undoOperation: (xxxDocOperation *) op
+{
     // TODO: this should be done after the server confirmed, put into completion handler.
     // undo the operation.
     
@@ -192,17 +213,35 @@
     self.globalOperationNumber = [NSNumber numberWithInt:(self.globalOperationNumber.intValue - 1)];
 }
 
+
 - (void)redoAct: (UIButton *)redoButton
 {
     // get last operation that is done by this user from redo stack.
     xxxDocOperation *op;
+    int operationID = 0;
     if (self.redoStack.count == 0){
         return;
     }
     else{
         op = [self.redoStack lastObject];
+        operationID = op.operationID;
     }
     
+    // Get all operation has the same ID and undo one by one.
+    for (int i = self.redoStack.count - 1; i >= 0 ; i--) {
+        op = [self.redoStack objectAtIndex:i];
+        if (op.operationID == operationID){
+            [self redoOperation:op];
+        }
+        else{
+            break;
+        }
+    }
+}
+
+// Take an operation as input, redo the operation, the operation must have been done before (exist in the stack)
+- (void)redoOperation:(xxxDocOperation *)op
+{
     // redo the operation.
     int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:op.range.location];
     int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:(op.range.location + op.range.length)];
@@ -211,7 +250,7 @@
     replaceRange.length = endIndex - startIndex;
     // replace the string
     self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:replaceRange withString:op.replcaceString];
-
+    
     // update the operation to redo stack, operation array and global counter
     [self.redoStack removeObject:op];
     op.state = LOCAL;
@@ -251,6 +290,18 @@
     return result;
 }
 
+// Add an operation to operation stack and make sure the consistency
+- (void) addOperationToOperationArray: (xxxDocOperation*)operation
+{
+    // TODO: test code, should not change to global
+    operation.state = GLOBAL;
+    
+    [self.operationArray addObject:operation];
+    
+    // TODO: test code. Update global counter.
+    // Broadcast all events.
+    self.globalOperationNumber = [NSNumber numberWithInt: self.globalOperationNumber.intValue + 1];
+}
 
 #pragma mark UITextViewDelegate Protocol Methods
 
@@ -266,12 +317,7 @@
     operation.state = LOCAL;
     
     // 3. put operation into operation array.
-    [self.operationArray addObject:operation];
-    
-    // TODO: test code. Update global counter.
-    // Broadcast all events.
-    self.globalOperationNumber = [NSNumber numberWithInt: self.globalOperationNumber.intValue + 1];
-    
+    [self addOperationToOperationArray:operation];
     
     /* TODO: test code */
     if (text.length == 0){

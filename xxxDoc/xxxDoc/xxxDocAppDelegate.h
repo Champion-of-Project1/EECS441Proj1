@@ -7,13 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <Collabrify/Collabrify.h>
 
 @interface xxxDocAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
-
-// Singleton Collabrify client
-@property (strong, nonatomic) CollabrifyClient *collabrifyClient;
 
 @end

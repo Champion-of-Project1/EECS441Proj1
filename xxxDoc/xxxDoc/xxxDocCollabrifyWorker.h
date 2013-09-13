@@ -7,7 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Collabrify/Collabrify.h>
 
 @interface xxxDocCollabrifyWorker : NSObject
+
++ (CollabrifyClient *) getCollabrifyClient;
 
 @end
