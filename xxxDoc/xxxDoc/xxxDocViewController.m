@@ -178,9 +178,6 @@
     [self.redoStack removeObject:op];
     op.state = LOCAL;
     self.globalOperationNumber = [NSNumber numberWithInt:(self.globalOperationNumber.intValue + 1)];
-    
-    
-    NSLog(@"Redo\n");
 }
 
 
@@ -228,11 +225,13 @@
     operation.range = range;
     operation.replcaceString = text;
     operation.originalString = [textView.text substringWithRange:range];
+    operation.state = LOCAL;
     
     // 3. put operation into operation array.
     [self.operationArray addObject:operation];
     
     // TODO: test code. Update global counter.
+    // Broadcast all events.
     self.globalOperationNumber = [NSNumber numberWithInt: self.globalOperationNumber.intValue + 1];
     
     
