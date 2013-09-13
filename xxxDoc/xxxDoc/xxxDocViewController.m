@@ -29,12 +29,16 @@
 // The user's input view.
 @property (weak, nonatomic) UITextView *inputTextView;
 
+// NOT SURE
+@property (strong, nonatomic) NSString *selectedText;
+
 @end
 
 @implementation xxxDocViewController
 
 @synthesize operationArray = _operationArray;
 @synthesize globalOperationNumber = _globalOperationNumber;
+@synthesize selectedText = _selectedText;
 
 - (NSMutableArray*) operationArray
 {
@@ -77,6 +81,7 @@
     [replaceButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [moveButton setTitle:@"move" forState:UIControlStateNormal];
     [moveButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    [moveButton setTitleColor:[UIColor blueColor] forState:UIControlStateSelected];
     [undoButton setTitle:@"undo" forState:UIControlStateNormal];
     [undoButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [redoButton setTitle:@"redo" forState:UIControlStateNormal];
@@ -112,11 +117,44 @@
 - (void)replaceChars: (UIButton *)replaceButton
 {
     NSLog(@"Replace\n");
+    
 }
 
 - (void)moveChars: (UIButton *)moveButton
 {
-    NSLog(@"Move\n");
+    xxxDocOperation* operation = [[xxxDocOperation alloc] init];
+    if (!moveButton.selected) {
+        if (![self.inputTextView selectedRange].length) {
+            NSLog(@"No text selected!");
+            return;
+        }
+        // Delete the selected text
+        // TODO: OPERATION ID
+        operation.range = [self.inputTextView selectedRange];
+        operation.replcaceString = @"";
+        operation.originalString = [self.inputTextView.text substringWithRange:operation.range];
+        operation.state = LOCAL;
+        [self.operationArray addObject:operation];
+        self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:operation.range withString:operation.replcaceString];
+        NSLog(@"Delete text in Move: %@", operation.originalString);
+        self.selectedText = operation.originalString;
+    }
+    else {
+        // Add to another place
+        // TODO: OPERATION ID
+        if ([self.inputTextView selectedRange].length) {
+            NSLog(@"No cursor location specified!");
+            return;
+        }
+        operation.range = [self.inputTextView selectedRange];
+        operation.replcaceString = self.selectedText;
+        operation.originalString = @"";
+        operation.state = LOCAL;
+        [self.operationArray addObject:operation];
+        self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:operation.range withString:operation.replcaceString];
+        NSLog(@"Add text in Move: %@", operation.replcaceString);
+    }
+    [moveButton setSelected:!moveButton.selected];
 }
 
 - (void)undoAct: (UIButton *)undoButton
@@ -140,8 +178,8 @@
     // undo the operation.
     
     // Get the replace start and end point by translate the index.
-    int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGobalIndex:op.range.location];
-    int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGobalIndex:(op.range.location + op.replcaceString.length)];
+    int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:op.range.location];
+    int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:(op.range.location + op.replcaceString.length)];
     NSRange replaceRange;
     replaceRange.location = startIndex;
     replaceRange.length = endIndex - startIndex;
@@ -166,8 +204,8 @@
     }
     
     // redo the operation.
-    int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGobalIndex:op.range.location];
-    int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGobalIndex:(op.range.location + op.range.length)];
+    int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:op.range.location];
+    int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:(op.range.location + op.range.length)];
     NSRange replaceRange;
     replaceRange.location = startIndex;
     replaceRange.length = endIndex - startIndex;
@@ -204,7 +242,7 @@
 }
 
 - (int) getLocalIndexByGlobalOperationID: (int) globalID
-                           andGobalIndex: (int) index
+                           andGlobalIndex: (int) index
 {
     int result = 0;
     
