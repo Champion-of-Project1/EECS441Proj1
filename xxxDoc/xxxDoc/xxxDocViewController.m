@@ -68,33 +68,21 @@
     UIView *buttonView = [[UIView alloc]initWithFrame:CGRectMake(0.f, 0.f, width, buttonViewHeight)];
     [buttonView setBackgroundColor:[UIColor lightGrayColor]];
     
-    UIButton *replaceButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    UIButton *moveButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     UIButton *undoButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     UIButton *redoButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     
-    [replaceButton addTarget:self action:@selector(replaceChars:) forControlEvents:UIControlEventTouchDown];
-    [moveButton addTarget:self action:@selector(moveChars:) forControlEvents:UIControlEventTouchDown];
     [undoButton addTarget:self action:@selector(undoAct:) forControlEvents:UIControlEventTouchDown];
     [redoButton addTarget:self action:@selector(redoAct:) forControlEvents:UIControlEventTouchDown];
     
-    [replaceButton setTitle:@"replace" forState:UIControlStateNormal];
-    [replaceButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-    [moveButton setTitle:@"move" forState:UIControlStateNormal];
-    [moveButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-    [moveButton setTitleColor:[UIColor blueColor] forState:UIControlStateSelected];
+
     [undoButton setTitle:@"undo" forState:UIControlStateNormal];
     [undoButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [redoButton setTitle:@"redo" forState:UIControlStateNormal];
     [redoButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     
-    [replaceButton setFrame:CGRectMake(buttonOffset, buttonOffset, width / 4 - 2 * buttonOffset, buttonViewHeight - 2 * buttonOffset)];
-    [moveButton setFrame:CGRectMake(width / 4 + buttonOffset, buttonOffset, width / 4 - 2 * buttonOffset, buttonViewHeight - 2 * buttonOffset)];
     [undoButton setFrame:CGRectMake(width / 2 + buttonOffset, buttonOffset, width / 4 - 2 * buttonOffset, buttonViewHeight - 2 * buttonOffset)];
     [redoButton setFrame:CGRectMake(width / 4 * 3 + buttonOffset, buttonOffset, width / 4 - 2 * buttonOffset, buttonViewHeight - 2 * buttonOffset)];
     
-    [buttonView addSubview:replaceButton];
-    [buttonView addSubview:moveButton];
     [buttonView addSubview:undoButton];
     [buttonView addSubview:redoButton];
     [self.view addSubview:buttonView];
@@ -115,51 +103,6 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)replaceChars: (UIButton *)replaceButton
-{
-    NSLog(@"Replace\n");
-    
-}
-
-- (void)moveChars: (UIButton *)moveButton
-{
-    static int operationID = 0;
-    xxxDocOperation* operation = [[xxxDocOperation alloc] initWithNoOperationID];
-    if (!moveButton.selected) {
-        // Get a new operation ID if it is a new move action.
-        operationID = [xxxDocOperation getOperationID];
-        operation.operationID = operationID;
-        if (![self.inputTextView selectedRange].length) {
-            NSLog(@"No text selected!");
-            return;
-        }
-        // Delete the selected text
-        operation.range = [self.inputTextView selectedRange];
-        operation.replcaceString = @"";
-        operation.originalString = [self.inputTextView.text substringWithRange:operation.range];
-        operation.state = LOCAL;
-        self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:operation.range withString:operation.replcaceString];
-        NSLog(@"Delete text in Move: %@", operation.originalString);
-        self.selectedText = operation.originalString;
-    }
-    else {
-        operation.operationID = operationID;
-        // Add to another place
-        if ([self.inputTextView selectedRange].length) {
-            NSLog(@"No cursor location specified!");
-            return;
-        }
-        operation.range = [self.inputTextView selectedRange];
-        operation.replcaceString = self.selectedText;
-        operation.originalString = @"";
-        operation.state = LOCAL;
-        self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:operation.range withString:operation.replcaceString];
-        NSLog(@"Add text in Move: %@", operation.replcaceString);
-    }
-    [moveButton setSelected:!moveButton.selected];
-    
-    [self addOperationToOperationArray:operation];
-}
 
 - (void)undoAct: (UIButton *)undoButton
 {
