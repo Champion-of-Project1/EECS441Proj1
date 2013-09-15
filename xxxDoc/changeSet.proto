@@ -1,0 +1,28 @@
+package xxxDoc;
+
+message NSRange{
+	optional int64 location = 1;
+	optional int64 length = 2;
+}
+
+message Operation{
+	optional NSRange range = 1;
+	optional string original_String = 2;
+	optional string replace_String = 3;
+	enum State {
+		LOCALSTATE = 0;
+		SENDSTATE = 1;
+		GLOBALSTATE = 2;
+		UNDOSTATE = 3;
+	}
+	optional State state = 4;
+	optional int64 operation_ID = 5;
+	optional int64 participant_ID = 6; 
+}
+
+
+message ChangeSet{
+	optional int64 startOperation_ID = 1;
+	optional int64 cursor_Location = 2;
+	repeated Operation operations = 3;
+}

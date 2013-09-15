@@ -11,6 +11,7 @@
 #import "xxxDocChangeSet.h"
 #import "xxxDocOperation.h"
 #import "xxxDocCollabrifyWorker.h"
+#import "xxxDocTextView.h"
 
 @interface xxxDocViewController ()
 
@@ -88,8 +89,9 @@
     [self.view addSubview:buttonView];
     
     double textViewOffset = 10.f;
-    UITextView *textView = [[UITextView alloc]initWithFrame:CGRectMake(0.f, buttonViewHeight + textViewOffset, width, height - buttonViewHeight - textViewOffset)];
+    xxxDocTextView *textView = [[xxxDocTextView alloc]initWithFrame:CGRectMake(0.f, buttonViewHeight + textViewOffset, width, height - buttonViewHeight - textViewOffset)];
     textView.delegate = self;
+    textView.autocorrectionType = UITextAutocorrectionTypeNo;
     self.inputTextView = textView;
     [self.view addSubview:textView];
     
@@ -113,6 +115,7 @@
         if (op.participantID == self.participantID && op.state == GLOBAL){
             break;
         }
+        op = nil;
     }
     
     // If no available operation, do nothing. TODO: user a more graceful response.
@@ -214,6 +217,10 @@
         }
         // If this operation is done after the operation we are looking for, and not the same one
         // Update the index
+        // Igonore UNDO action.
+        if (operation.state == UNDO){
+            continue;
+        }
         if (getOp && operation.operationID != operationID){
             if (operation.range.location > index){
                 // If the change happen after this index, no need to do anything.
@@ -239,7 +246,8 @@
 - (void) addOperationToOperationArray: (xxxDocOperation*)operation
 {
     // TODO: test code, should not change to global
-    if (self.operationArray.count < 10)     operation.state = GLOBAL;
+//    if (self.operationArray.count < 10)     operation.state = GLOBAL;
+    operation.state = GLOBAL;
     
     [self.operationArray addObject:operation];
     
@@ -252,6 +260,11 @@
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
+    if (range.length > 1 || text.length > 1)
+    {
+        return NO;
+    }
+    
     // 1. Create operation.
     xxxDocOperation* operation = [[xxxDocOperation alloc] init];
     
@@ -278,5 +291,6 @@
     
     return YES;
 }
+
 
 @end
