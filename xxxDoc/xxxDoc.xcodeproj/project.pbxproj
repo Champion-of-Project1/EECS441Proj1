@@ -60,6 +60,7 @@
 		D79EF1BD17E2707C0060D3E7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D79EF1BC17E2707C0060D3E7 /* libz.dylib */; };
 		D79EF1C017E277370060D3E7 /* xxxDocCollabrifyWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = D79EF1BF17E277370060D3E7 /* xxxDocCollabrifyWorker.m */; };
 		D79EF1C717E291D70060D3E7 /* xxxDocBufferWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.m */; };
+		D79EF1CA17E3BE2D0060D3E7 /* xxxDocLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D79EF1C917E3BE2D0060D3E7 /* xxxDocLoginViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -176,6 +177,8 @@
 		D79EF1BF17E277370060D3E7 /* xxxDocCollabrifyWorker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocCollabrifyWorker.m; sourceTree = "<group>"; };
 		D79EF1C517E291D70060D3E7 /* xxxDocBufferWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxxDocBufferWorker.h; sourceTree = "<group>"; };
 		D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocBufferWorker.m; sourceTree = "<group>"; };
+		D79EF1C817E3BE2D0060D3E7 /* xxxDocLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxxDocLoginViewController.h; sourceTree = "<group>"; };
+		D79EF1C917E3BE2D0060D3E7 /* xxxDocLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocLoginViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -233,6 +236,8 @@
 				6A13A2A117DF86EE00CF1D0B /* xxxDocAppDelegate.h */,
 				6A13A2A217DF86EE00CF1D0B /* xxxDocAppDelegate.m */,
 				6A13A2AA17DF86EE00CF1D0B /* MainStoryboard.storyboard */,
+				D79EF1C817E3BE2D0060D3E7 /* xxxDocLoginViewController.h */,
+				D79EF1C917E3BE2D0060D3E7 /* xxxDocLoginViewController.m */,
 				6A13A2AD17DF86EE00CF1D0B /* xxxDocViewController.h */,
 				6A13A2AE17DF86EE00CF1D0B /* xxxDocViewController.m */,
 				D79EF1C517E291D70060D3E7 /* xxxDocBufferWorker.h */,
@@ -503,6 +508,7 @@
 				D79EF1B917E26F9F0060D3E7 /* wire_format_lite.cc in Sources */,
 				D79EF1C017E277370060D3E7 /* xxxDocCollabrifyWorker.m in Sources */,
 				D79EF1C717E291D70060D3E7 /* xxxDocBufferWorker.m in Sources */,
+				D79EF1CA17E3BE2D0060D3E7 /* xxxDocLoginViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

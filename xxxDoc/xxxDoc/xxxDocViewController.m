@@ -25,7 +25,7 @@
 @property (strong, nonatomic) NSNumber *globalOperationNumber;
 
 // The user's session ID
-@property (nonatomic) int64_t sessionID;
+@property (nonatomic) int64_t participantID;
 
 // The user's input view.
 @property (weak, nonatomic) UITextView *inputTextView;
@@ -94,7 +94,7 @@
     [self.view addSubview:textView];
     
     // TODO: test code.
-    self.sessionID = [xxxDocCollabrifyWorker getCollabrifyClient].participantID;
+    self.participantID = [xxxDocCollabrifyWorker getCollabrifyClient].participantID;
 }
 
 - (void)didReceiveMemoryWarning
@@ -108,13 +108,9 @@
 {
     // get last operation that is done by this user from operataion array.
     xxxDocOperation *op;
-    int operationIndex = 0;
-    int operationID = 0;
     for (int i = self.globalOperationNumber.intValue - 1; i >= 0 ; i--) {
         op = [self.operationArray objectAtIndex:i];
-        if (op.participantID == self.sessionID && op.state == GLOBAL){
-            operationIndex = i;
-            operationID = op.operationID;
+        if (op.participantID == self.participantID && op.state == GLOBAL){
             break;
         }
     }
@@ -124,13 +120,7 @@
         return;
     }
     
-    // Get all operation has the same ID and undo one by one.
-    for (int i = operationIndex; i >= 0 ; i--) {
-        op = [self.operationArray objectAtIndex:i];
-        if (op.operationID == operationID){
-            [self undoOperation:op];
-        }
-    }
+    [self undoOperation:op];
 }
 
 // Undo an operation, take an operation as input.
@@ -161,25 +151,14 @@
 {
     // get last operation that is done by this user from redo stack.
     xxxDocOperation *op;
-    int operationID = 0;
     if (self.redoStack.count == 0){
         return;
     }
     else{
         op = [self.redoStack lastObject];
-        operationID = op.operationID;
     }
     
-    // Get all operation has the same ID and undo one by one.
-    for (int i = self.redoStack.count - 1; i >= 0 ; i--) {
-        op = [self.redoStack objectAtIndex:i];
-        if (op.operationID == operationID){
-            [self redoOperation:op];
-        }
-        else{
-            break;
-        }
-    }
+    [self redoOperation:op];
 }
 
 // Take an operation as input, redo the operation, the operation must have been done before (exist in the stack)
@@ -196,7 +175,7 @@
     
     // update the operation to redo stack, operation array and global counter
     [self.redoStack removeObject:op];
-    op.state = LOCAL;
+    op.state = GLOBAL;
     self.globalOperationNumber = [NSNumber numberWithInt:(self.globalOperationNumber.intValue + 1)];
 }
 
@@ -223,21 +202,44 @@
     
 }
 
-- (int) getLocalIndexByGlobalOperationID: (int) globalID
+- (int) getLocalIndexByGlobalOperationID: (int) operationID
                            andGlobalIndex: (int) index
 {
-    int result = 0;
+    // indicate if we find the operation or not.
+    BOOL getOp = false;
+    for (int i = 0; i < self.operationArray.count; i++) {
+        xxxDocOperation* operation = [self.operationArray objectAtIndex:i];
+        if (operation.operationID == operationID){
+            getOp = true;
+        }
+        // If this operation is done after the operation we are looking for, and not the same one
+        // Update the index
+        if (getOp && operation.operationID != operationID){
+            if (operation.range.location > index){
+                // If the change happen after this index, no need to do anything.
+                continue;
+            }
+            else if (operation.range.location + operation.range.length < index){
+                // If the index is not within the replace range
+                index = index + operation.replcaceString.length - operation.originalString.length;
+            }
+            else{
+                // If the index is within the range of change, set it to the location of range
+                // This is what google doc does.
+                index = operation.range.location;
+            }
+        }
+    }
     
-    result = index;
     
-    return result;
+    return index;
 }
 
 // Add an operation to operation stack and make sure the consistency
 - (void) addOperationToOperationArray: (xxxDocOperation*)operation
 {
     // TODO: test code, should not change to global
-    operation.state = GLOBAL;
+    if (self.operationArray.count < 10)     operation.state = GLOBAL;
     
     [self.operationArray addObject:operation];
     
@@ -255,6 +257,7 @@
     
     // 2. Add replacement info into operation.
     operation.range = range;
+    operation.participantID = self.participantID;
     operation.replcaceString = text;
     operation.originalString = [textView.text substringWithRange:range];
     operation.state = LOCAL;

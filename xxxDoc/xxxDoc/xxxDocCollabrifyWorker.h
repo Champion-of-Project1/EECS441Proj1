@@ -11,6 +11,8 @@
 
 @interface xxxDocCollabrifyWorker : NSObject
 
+@property int64_t sessionID;
+
 + (CollabrifyClient *) getCollabrifyClient;
 
 @end

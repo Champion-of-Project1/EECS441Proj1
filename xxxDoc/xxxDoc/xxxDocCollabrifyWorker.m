@@ -10,6 +10,8 @@
 
 @implementation xxxDocCollabrifyWorker
 
+@synthesize sessionID = _sessionID;
+
 static CollabrifyClient* _collabrifyClient;
 
 + (CollabrifyClient *) getCollabrifyClient
@@ -23,6 +25,19 @@ static CollabrifyClient* _collabrifyClient;
                                                               error:nil];
     }
     return _collabrifyClient;
+}
+
+- (void) createSession
+{
+    [[self.class getCollabrifyClient] createSessionWithName:@"chenditcTestSession"
+                                                       tags:[[NSArray alloc] initWithObjects:@"test", nil]
+                                                   password:nil
+                                                startPaused:NO
+                                          completionHandler:^(int64_t sessionID,CollabrifyError* error){
+                                              self.sessionID = sessionID;
+                                              [[self.class getCollabrifyClient] leaveAndDeleteSession:YES
+                                                                                    completionHandler:nil];
+                                          }];
 }
 
 @end
