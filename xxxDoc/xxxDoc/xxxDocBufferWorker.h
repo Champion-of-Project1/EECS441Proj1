@@ -7,7 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "xxxDocChangeSet.h"
 
 @interface xxxDocBufferWorker : NSObject
+
+- (NSData *) getDataFromChangeSet: (xxxDocChangeSet *) changeSet;
+- (xxxDocChangeSet *) getChangeSetFromNSData: (NSData *) inputData;
 
 @end

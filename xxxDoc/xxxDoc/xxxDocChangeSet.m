@@ -14,4 +14,12 @@
 @synthesize operationArray = _operationArray;
 @synthesize cursorLocation = _cursorLocation;
 
+- (NSArray *) operationArray
+{
+    if (_operationArray == nil){
+        _operationArray = [[NSArray alloc] init];
+    }
+    return _operationArray;
+}
+
 @end

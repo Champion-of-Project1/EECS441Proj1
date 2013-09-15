@@ -12,6 +12,7 @@
 #import "xxxDocOperation.h"
 #import "xxxDocCollabrifyWorker.h"
 #import "xxxDocTextView.h"
+#import "xxxDocBufferWorker.h"
 
 @interface xxxDocViewController ()
 
@@ -195,8 +196,28 @@
 // TODO: confirm a set of operation, detail to be determined.
 - (void) confirmOperation
 {
+    xxxDocChangeSet *changeSet = [[xxxDocChangeSet alloc] init];
+    
+    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
+    for (int i = self.globalOperationNumber.intValue - 1; i >= 0 ; i--){
+        xxxDocOperation *op = [self.operationArray objectAtIndex:i];
+        if (op.state == LOCAL){
+            [tempArray addObject:op];
+        }
+        else{
+            break;
+        }
+    }
+    
+    changeSet.operationArray = [tempArray copy];
+    // TODO: test code
+    changeSet.startOperationID = 100;
+    changeSet.cursorLocation = 25;
 
-
+    xxxDocBufferWorker *bufferWorker = [[xxxDocBufferWorker alloc] init];
+    NSData *tempData = [bufferWorker getDataFromChangeSet:changeSet];
+    
+    // TODO: send data to other user via collabrify.
 }
 
 // apply a new change set to current operation array.

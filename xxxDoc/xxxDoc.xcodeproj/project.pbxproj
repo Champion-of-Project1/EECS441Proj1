@@ -59,8 +59,10 @@
 		D79EF1BB17E270730060D3E7 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D79EF1BA17E270730060D3E7 /* SystemConfiguration.framework */; };
 		D79EF1BD17E2707C0060D3E7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D79EF1BC17E2707C0060D3E7 /* libz.dylib */; };
 		D79EF1C017E277370060D3E7 /* xxxDocCollabrifyWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = D79EF1BF17E277370060D3E7 /* xxxDocCollabrifyWorker.m */; };
-		D79EF1C717E291D70060D3E7 /* xxxDocBufferWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.m */; };
+		D79EF1C717E291D70060D3E7 /* xxxDocBufferWorker.mm in Sources */ = {isa = PBXBuildFile; fileRef = D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.mm */; };
 		D79EF1CA17E3BE2D0060D3E7 /* xxxDocLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D79EF1C917E3BE2D0060D3E7 /* xxxDocLoginViewController.m */; };
+		D7F949BE17E660F5007E913B /* changeSet.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = D7F949BC17E64E4F007E913B /* changeSet.pb.cc */; };
+		D7F949C117E66D91007E913B /* xxxDocTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F949C017E66D91007E913B /* xxxDocTextView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -176,9 +178,13 @@
 		D79EF1BE17E277370060D3E7 /* xxxDocCollabrifyWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxxDocCollabrifyWorker.h; sourceTree = "<group>"; };
 		D79EF1BF17E277370060D3E7 /* xxxDocCollabrifyWorker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocCollabrifyWorker.m; sourceTree = "<group>"; };
 		D79EF1C517E291D70060D3E7 /* xxxDocBufferWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxxDocBufferWorker.h; sourceTree = "<group>"; };
-		D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocBufferWorker.m; sourceTree = "<group>"; };
+		D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = xxxDocBufferWorker.mm; sourceTree = "<group>"; };
 		D79EF1C817E3BE2D0060D3E7 /* xxxDocLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxxDocLoginViewController.h; sourceTree = "<group>"; };
 		D79EF1C917E3BE2D0060D3E7 /* xxxDocLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocLoginViewController.m; sourceTree = "<group>"; };
+		D7F949BC17E64E4F007E913B /* changeSet.pb.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = changeSet.pb.cc; sourceTree = "<group>"; };
+		D7F949BD17E64E4F007E913B /* changeSet.pb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = changeSet.pb.h; sourceTree = "<group>"; };
+		D7F949BF17E66D91007E913B /* xxxDocTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxxDocTextView.h; sourceTree = "<group>"; };
+		D7F949C017E66D91007E913B /* xxxDocTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocTextView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -240,8 +246,10 @@
 				D79EF1C917E3BE2D0060D3E7 /* xxxDocLoginViewController.m */,
 				6A13A2AD17DF86EE00CF1D0B /* xxxDocViewController.h */,
 				6A13A2AE17DF86EE00CF1D0B /* xxxDocViewController.m */,
+				D7F949BF17E66D91007E913B /* xxxDocTextView.h */,
+				D7F949C017E66D91007E913B /* xxxDocTextView.m */,
 				D79EF1C517E291D70060D3E7 /* xxxDocBufferWorker.h */,
-				D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.m */,
+				D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.mm */,
 				D79EF1BE17E277370060D3E7 /* xxxDocCollabrifyWorker.h */,
 				D79EF1BF17E277370060D3E7 /* xxxDocCollabrifyWorker.m */,
 				D79EF13617E234220060D3E7 /* xxxDocOperation.h */,
@@ -250,6 +258,8 @@
 				D79EF13A17E2348B0060D3E7 /* xxxDocChangeSet.m */,
 				6A83B50517E0DB1D0047E15A /* xxxDocCursor.h */,
 				6A83B50617E0DB1D0047E15A /* xxxDocCursor.m */,
+				D7F949BC17E64E4F007E913B /* changeSet.pb.cc */,
+				D7F949BD17E64E4F007E913B /* changeSet.pb.h */,
 				D79EF14117E26F9F0060D3E7 /* Google Protocol Buffers */,
 				6A13A29917DF86ED00CF1D0B /* Supporting Files */,
 			);
@@ -467,6 +477,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D7F949BE17E660F5007E913B /* changeSet.pb.cc in Sources */,
 				6A13A29F17DF86ED00CF1D0B /* main.m in Sources */,
 				6A13A2A317DF86EE00CF1D0B /* xxxDocAppDelegate.m in Sources */,
 				6A13A2AF17DF86EE00CF1D0B /* xxxDocViewController.m in Sources */,
@@ -507,8 +518,9 @@
 				D79EF1B817E26F9F0060D3E7 /* wire_format.cc in Sources */,
 				D79EF1B917E26F9F0060D3E7 /* wire_format_lite.cc in Sources */,
 				D79EF1C017E277370060D3E7 /* xxxDocCollabrifyWorker.m in Sources */,
-				D79EF1C717E291D70060D3E7 /* xxxDocBufferWorker.m in Sources */,
+				D79EF1C717E291D70060D3E7 /* xxxDocBufferWorker.mm in Sources */,
 				D79EF1CA17E3BE2D0060D3E7 /* xxxDocLoginViewController.m in Sources */,
+				D7F949C117E66D91007E913B /* xxxDocTextView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
