@@ -32,8 +32,8 @@
 // The user's input view.
 @property (weak, nonatomic) UITextView *inputTextView;
 
-// NOT SURE
-@property (strong, nonatomic) NSString *selectedText;
+// The CollabrifyClient worker to use the API
+@property (strong, nonatomic) xxxDocCollabrifyWorker *clientWorker;
 
 @end
 
@@ -41,7 +41,6 @@
 
 @synthesize operationArray = _operationArray;
 @synthesize globalOperationNumber = _globalOperationNumber;
-@synthesize selectedText = _selectedText;
 
 - (NSMutableArray*) operationArray
 {
@@ -72,32 +71,72 @@
     
     UIButton *undoButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     UIButton *redoButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    UIButton *createButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    UIButton *joinButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     
     [undoButton addTarget:self action:@selector(undoAct:) forControlEvents:UIControlEventTouchDown];
     [redoButton addTarget:self action:@selector(redoAct:) forControlEvents:UIControlEventTouchDown];
+    [createButton addTarget:self action:@selector(createSess:) forControlEvents:UIControlEventTouchDown];
+    [joinButton addTarget:self action:@selector(joinSess:) forControlEvents:UIControlEventTouchDown];
     
-
     [undoButton setTitle:@"undo" forState:UIControlStateNormal];
     [undoButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [redoButton setTitle:@"redo" forState:UIControlStateNormal];
     [redoButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    [createButton setTitle:@"create" forState:UIControlStateNormal];
+    [createButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    [joinButton setTitle:@"join" forState:UIControlStateNormal];
+    [joinButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     
     [undoButton setFrame:CGRectMake(width / 2 + buttonOffset, buttonOffset, width / 4 - 2 * buttonOffset, buttonViewHeight - 2 * buttonOffset)];
     [redoButton setFrame:CGRectMake(width / 4 * 3 + buttonOffset, buttonOffset, width / 4 - 2 * buttonOffset, buttonViewHeight - 2 * buttonOffset)];
+    [createButton setFrame:CGRectMake(buttonOffset, buttonOffset, width / 4 - 2 * buttonOffset, buttonViewHeight - 2 * buttonOffset)];
+    [joinButton setFrame:CGRectMake(width / 4 + buttonOffset, buttonOffset, width / 4 - 2 * buttonOffset, buttonViewHeight - 2 * buttonOffset)];
     
     [buttonView addSubview:undoButton];
     [buttonView addSubview:redoButton];
+    [buttonView addSubview:createButton];
+    [buttonView addSubview:joinButton];
     [self.view addSubview:buttonView];
     
     double textViewOffset = 10.f;
     xxxDocTextView *textView = [[xxxDocTextView alloc]initWithFrame:CGRectMake(0.f, buttonViewHeight + textViewOffset, width, height - buttonViewHeight - textViewOffset)];
-    textView.delegate = self;
-    textView.autocorrectionType = UITextAutocorrectionTypeNo;
-    self.inputTextView = textView;
+    [textView setDelegate:self];
+    [textView setAutocorrectionType:UITextAutocorrectionTypeNo];
+    [textView setScrollEnabled:YES];
+    
+    [self setInputTextView:textView];
     [self.view addSubview:textView];
     
     // TODO: test code.
-    self.participantID = [xxxDocCollabrifyWorker getCollabrifyClient].participantID;
+    //    self.participantID = [xxxDocCollabrifyWorker getCollabrifyClient].participantID;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    if (![self clientWorker]) {
+        [self setClientWorker:[[xxxDocCollabrifyWorker alloc]init]];
+    }
+    // If create session
+    //[self setParticipantID:[[self clientWorker]createSession]];
+    
+    // If join session
+    //[self setParticipantID:(int64_t)NUM];
+    //[[self clientWorker]listSessions];
+    //[[self clientWorker]joinSessionWithSessionID:[self participantID]];
+}
+
+- (void)createSess: (UIButton *)createButton
+{
+    [self setParticipantID:[[self clientWorker]createSession]];
+}
+
+- (void)joinSess: (UIButton *)joinButton
+{
+    [self setParticipantID:(int64_t)12345];
+    [[self clientWorker]listSessions];
+    [[self clientWorker]joinSessionWithSessionID:[self participantID]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -111,7 +150,7 @@
 {
     // get last operation that is done by this user from operataion array.
     xxxDocOperation *op;
-    for (int i = self.globalOperationNumber.intValue - 1; i >= 0 ; i--) {
+    for (int i = self.operationArray.count - 1; i >= 0 ; i--) {
         op = [self.operationArray objectAtIndex:i];
         if (op.participantID == self.participantID && op.state == GLOBAL){
             break;
@@ -213,7 +252,7 @@
     // TODO: test code
     changeSet.startOperationID = 100;
     changeSet.cursorLocation = 25;
-
+    
     xxxDocBufferWorker *bufferWorker = [[xxxDocBufferWorker alloc] init];
     NSData *tempData = [bufferWorker getDataFromChangeSet:changeSet];
     
@@ -227,7 +266,7 @@
 }
 
 - (int) getLocalIndexByGlobalOperationID: (int) operationID
-                           andGlobalIndex: (int) index
+                          andGlobalIndex: (int) index
 {
     // indicate if we find the operation or not.
     BOOL getOp = false;
@@ -267,7 +306,7 @@
 - (void) addOperationToOperationArray: (xxxDocOperation*)operation
 {
     // TODO: test code, should not change to global
-//    if (self.operationArray.count < 10)     operation.state = GLOBAL;
+    //    if (self.operationArray.count < 10)     operation.state = GLOBAL;
     operation.state = GLOBAL;
     
     [self.operationArray addObject:operation];

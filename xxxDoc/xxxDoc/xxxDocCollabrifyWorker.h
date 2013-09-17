@@ -13,6 +13,10 @@
 
 @property int64_t sessionID;
 
-+ (CollabrifyClient *) getCollabrifyClient;
+- (int64_t) createSession;
+
+- (void) listSessions;
+
+- (void) joinSessionWithSessionID: (int64_t)sessionID;
 
 @end
