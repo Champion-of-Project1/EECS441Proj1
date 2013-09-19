@@ -7,6 +7,9 @@
 //
 
 #import "xxxDocCollabrifyWorker.h"
+#import "xxxDocBufferWorker.h"
+#import "xxxDocStackManager.h"
+#import "xxxDocOperation.h"
 
 @interface xxxDocCollabrifyWorker () < CollabrifyClientDelegate, CollabrifyClientDataSource >
 
@@ -23,6 +26,15 @@
 @implementation xxxDocCollabrifyWorker
 
 @synthesize sessionID = _sessionID;
+@synthesize participantID = _participantID;
+@synthesize tags = _tags;
+@synthesize client = _client;
+@synthesize data = _data;
+
+- (int64_t) participantID
+{
+    return self.client.participantID;
+}
 
 //- (CollabrifyClient *) getCollabrifyClient
 - (id)init
@@ -45,7 +57,8 @@
 
 - (int64_t) createSession
 {
-    [[self client] createSessionWithBaseFileWithName:@"chenditcTestSession"
+    
+    [[self client] createSessionWithBaseFileWithName:@"chenditcTestSession6"
                                                 tags:self.tags
                                             password:nil
                                          startPaused:NO
@@ -60,6 +73,8 @@
                                            NSLog(@"Session is protected = %i", [[self client] currentSessionIsPasswordProtected]);
                                        }
                                    }];
+
+
     return _sessionID;
 }
 
@@ -88,7 +103,7 @@
      ];
 }
 
-- (int32_t) joinSessionWithSessionID: (int64_t)sessionID
+- (void) joinSessionWithSessionID: (int64_t)sessionID
 {
     [[self client] joinSessionWithID:sessionID
                             password:nil
@@ -100,10 +115,19 @@
                            _sessionID = sessionID;
                            NSLog(@"Session ID = %lli", sessionID);
                            NSLog(@"Session is protected = %i", [[self client] currentSessionIsPasswordProtected]);
+                           
+                           int submissionID = [self.client broadcast:[@"test bc" dataUsingEncoding:NSUTF8StringEncoding] eventType:nil];
+                           NSLog(@"%u",submissionID);
                        }
                    }];
 }
 
+/**
+ * Called when the a chunk of base file is received or when all of the chunks have been received
+ * When all data has been received, data is nil
+ *
+ * This method is not called on the main thread
+ */
 - (void) client:(CollabrifyClient *)client receivedBaseFileChunk:(NSData *)data
 {
     if (data == nil) {
@@ -111,6 +135,44 @@
     } else {
         NSLog(@"Data = %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
     }
+}
+
+- (void)client:(CollabrifyClient *)client receivedEventWithOrderID:(int64_t)orderID submissionRegistrationID:(int32_t)submissionRegistrationID eventType:(NSString *)eventType data:(NSData *)data
+{
+    // reassemble the data.
+    xxxDocBufferWorker *bufferWorker = [[xxxDocBufferWorker alloc] init];
+    xxxDocChangeSet *changeSet = [bufferWorker getChangeSetFromNSData:data];
+    
+    if (changeSet.operationArray.count != 0){
+        [[xxxDocStackManager getStackManager] addNewChangeSet:changeSet globalID:orderID];
+    }
+    NSLog(@"receive message");
+}
+
+- (int) broadcastChangeSet:(xxxDocChangeSet *)changeSet
+{
+    // Translate the change set.
+    xxxDocBufferWorker *bufferWorker = [[xxxDocBufferWorker alloc] init];
+    NSData *changeSetData = [bufferWorker getDataFromChangeSet:changeSet];
+    
+    // send the data.
+    int64_t submissionID = [self.client broadcast:changeSetData eventType:nil];
+    
+    // If the data if successfully send, move them into send stack, otherwise return them to local stack.
+    if (submissionID == -1){
+        NSMutableArray* tempArray = [changeSet.operationArray mutableCopy];
+        [tempArray addObjectsFromArray:[xxxDocStackManager getStackManager].localStack];
+        [xxxDocStackManager getStackManager].localStack = tempArray;
+    }
+    else{
+        // mark the operations as SEND, then place them to send stack.
+        for (xxxDocOperation *op in changeSet.operationArray) {
+            op.state = SEND;
+        }
+        // put the operations into SEND stack.
+        [[xxxDocStackManager getStackManager].sendStack addObjectsFromArray:changeSet.operationArray];
+    }
+    return submissionID;
 }
 
 @end

@@ -57,13 +57,15 @@ void protobuf_AssignDesc_changeSet_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(NSRange));
   Operation_descriptor_ = file->message_type(1);
-  static const int Operation_offsets_[6] = {
+  static const int Operation_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Operation, range_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Operation, original_string_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Operation, replace_string_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Operation, state_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Operation, operation_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Operation, participant_id_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Operation, globalid_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Operation, referid_),
   };
   Operation_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -79,7 +81,7 @@ void protobuf_AssignDesc_changeSet_2eproto() {
   Operation_State_descriptor_ = Operation_descriptor_->enum_type(0);
   ChangeSet_descriptor_ = file->message_type(2);
   static const int ChangeSet_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangeSet, startoperation_id_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangeSet, startglobal_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangeSet, cursor_location_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangeSet, operations_),
   };
@@ -133,16 +135,17 @@ void protobuf_AddDesc_changeSet_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\017changeSet.proto\022\006xxxDoc\"+\n\007NSRange\022\020\n\010"
-    "location\030\001 \001(\003\022\016\n\006length\030\002 \001(\003\"\372\001\n\tOpera"
+    "location\030\001 \001(\003\022\016\n\006length\030\002 \001(\003\"\235\002\n\tOpera"
     "tion\022\036\n\005range\030\001 \001(\0132\017.xxxDoc.NSRange\022\027\n\017"
     "original_String\030\002 \001(\t\022\026\n\016replace_String\030"
     "\003 \001(\t\022&\n\005state\030\004 \001(\0162\027.xxxDoc.Operation."
     "State\022\024\n\014operation_ID\030\005 \001(\003\022\026\n\016participa"
-    "nt_ID\030\006 \001(\003\"F\n\005State\022\016\n\nLOCALSTATE\020\000\022\r\n\t"
-    "SENDSTATE\020\001\022\017\n\013GLOBALSTATE\020\002\022\r\n\tUNDOSTAT"
-    "E\020\003\"f\n\tChangeSet\022\031\n\021startOperation_ID\030\001 "
-    "\001(\003\022\027\n\017cursor_Location\030\002 \001(\003\022%\n\noperatio"
-    "ns\030\003 \003(\0132\021.xxxDoc.Operation", 427);
+    "nt_ID\030\006 \001(\003\022\020\n\010globalID\030\007 \001(\003\022\017\n\007referID"
+    "\030\010 \001(\003\"F\n\005State\022\016\n\nLOCALSTATE\020\000\022\r\n\tSENDS"
+    "TATE\020\001\022\017\n\013GLOBALSTATE\020\002\022\r\n\tUNDOSTATE\020\003\"c"
+    "\n\tChangeSet\022\026\n\016startGlobal_ID\030\001 \001(\003\022\027\n\017c"
+    "ursor_Location\030\002 \001(\003\022%\n\noperations\030\003 \003(\013"
+    "2\021.xxxDoc.Operation", 459);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "changeSet.proto", &protobuf_RegisterTypes);
   NSRange::default_instance_ = new NSRange();
@@ -443,6 +446,8 @@ const int Operation::kReplaceStringFieldNumber;
 const int Operation::kStateFieldNumber;
 const int Operation::kOperationIDFieldNumber;
 const int Operation::kParticipantIDFieldNumber;
+const int Operation::kGlobalIDFieldNumber;
+const int Operation::kReferIDFieldNumber;
 #endif  // !_MSC_VER
 
 Operation::Operation()
@@ -468,6 +473,8 @@ void Operation::SharedCtor() {
   state_ = 0;
   operation_id_ = GOOGLE_LONGLONG(0);
   participant_id_ = GOOGLE_LONGLONG(0);
+  globalid_ = GOOGLE_LONGLONG(0);
+  referid_ = GOOGLE_LONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -526,6 +533,8 @@ void Operation::Clear() {
     state_ = 0;
     operation_id_ = GOOGLE_LONGLONG(0);
     participant_id_ = GOOGLE_LONGLONG(0);
+    globalid_ = GOOGLE_LONGLONG(0);
+    referid_ = GOOGLE_LONGLONG(0);
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -633,6 +642,38 @@ bool Operation::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(56)) goto parse_globalID;
+        break;
+      }
+
+      // optional int64 globalID = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_globalID:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &globalid_)));
+          set_has_globalid();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(64)) goto parse_referID;
+        break;
+      }
+
+      // optional int64 referID = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_referID:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &referid_)));
+          set_has_referid();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -695,6 +736,16 @@ void Operation::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt64(6, this->participant_id(), output);
   }
 
+  // optional int64 globalID = 7;
+  if (has_globalid()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(7, this->globalid(), output);
+  }
+
+  // optional int64 referID = 8;
+  if (has_referid()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(8, this->referid(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -744,6 +795,16 @@ void Operation::SerializeWithCachedSizes(
   // optional int64 participant_ID = 6;
   if (has_participant_id()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(6, this->participant_id(), target);
+  }
+
+  // optional int64 globalID = 7;
+  if (has_globalid()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(7, this->globalid(), target);
+  }
+
+  // optional int64 referID = 8;
+  if (has_referid()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(8, this->referid(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -798,6 +859,20 @@ int Operation::ByteSize() const {
           this->participant_id());
     }
 
+    // optional int64 globalID = 7;
+    if (has_globalid()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->globalid());
+    }
+
+    // optional int64 referID = 8;
+    if (has_referid()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->referid());
+    }
+
   }
   if (!unknown_fields().empty()) {
     total_size +=
@@ -843,6 +918,12 @@ void Operation::MergeFrom(const Operation& from) {
     if (from.has_participant_id()) {
       set_participant_id(from.participant_id());
     }
+    if (from.has_globalid()) {
+      set_globalid(from.globalid());
+    }
+    if (from.has_referid()) {
+      set_referid(from.referid());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -872,6 +953,8 @@ void Operation::Swap(Operation* other) {
     std::swap(state_, other->state_);
     std::swap(operation_id_, other->operation_id_);
     std::swap(participant_id_, other->participant_id_);
+    std::swap(globalid_, other->globalid_);
+    std::swap(referid_, other->referid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -890,7 +973,7 @@ void Operation::Swap(Operation* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int ChangeSet::kStartOperationIDFieldNumber;
+const int ChangeSet::kStartGlobalIDFieldNumber;
 const int ChangeSet::kCursorLocationFieldNumber;
 const int ChangeSet::kOperationsFieldNumber;
 #endif  // !_MSC_VER
@@ -911,7 +994,7 @@ ChangeSet::ChangeSet(const ChangeSet& from)
 
 void ChangeSet::SharedCtor() {
   _cached_size_ = 0;
-  startoperation_id_ = GOOGLE_LONGLONG(0);
+  startglobal_id_ = GOOGLE_LONGLONG(0);
   cursor_location_ = GOOGLE_LONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -948,7 +1031,7 @@ ChangeSet* ChangeSet::New() const {
 
 void ChangeSet::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    startoperation_id_ = GOOGLE_LONGLONG(0);
+    startglobal_id_ = GOOGLE_LONGLONG(0);
     cursor_location_ = GOOGLE_LONGLONG(0);
   }
   operations_.Clear();
@@ -962,14 +1045,14 @@ bool ChangeSet::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional int64 startOperation_ID = 1;
+      // optional int64 startGlobal_ID = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
-                 input, &startoperation_id_)));
-          set_has_startoperation_id();
+                 input, &startglobal_id_)));
+          set_has_startglobal_id();
         } else {
           goto handle_uninterpreted;
         }
@@ -1026,9 +1109,9 @@ bool ChangeSet::MergePartialFromCodedStream(
 
 void ChangeSet::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional int64 startOperation_ID = 1;
-  if (has_startoperation_id()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->startoperation_id(), output);
+  // optional int64 startGlobal_ID = 1;
+  if (has_startglobal_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->startglobal_id(), output);
   }
 
   // optional int64 cursor_Location = 2;
@@ -1050,9 +1133,9 @@ void ChangeSet::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* ChangeSet::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // optional int64 startOperation_ID = 1;
-  if (has_startoperation_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->startoperation_id(), target);
+  // optional int64 startGlobal_ID = 1;
+  if (has_startglobal_id()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->startglobal_id(), target);
   }
 
   // optional int64 cursor_Location = 2;
@@ -1078,11 +1161,11 @@ int ChangeSet::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional int64 startOperation_ID = 1;
-    if (has_startoperation_id()) {
+    // optional int64 startGlobal_ID = 1;
+    if (has_startglobal_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int64Size(
-          this->startoperation_id());
+          this->startglobal_id());
     }
 
     // optional int64 cursor_Location = 2;
@@ -1128,8 +1211,8 @@ void ChangeSet::MergeFrom(const ChangeSet& from) {
   GOOGLE_CHECK_NE(&from, this);
   operations_.MergeFrom(from.operations_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_startoperation_id()) {
-      set_startoperation_id(from.startoperation_id());
+    if (from.has_startglobal_id()) {
+      set_startglobal_id(from.startglobal_id());
     }
     if (from.has_cursor_location()) {
       set_cursor_location(from.cursor_location());
@@ -1157,7 +1240,7 @@ bool ChangeSet::IsInitialized() const {
 
 void ChangeSet::Swap(ChangeSet* other) {
   if (other != this) {
-    std::swap(startoperation_id_, other->startoperation_id_);
+    std::swap(startglobal_id_, other->startglobal_id_);
     std::swap(cursor_location_, other->cursor_location_);
     operations_.Swap(&other->operations_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);

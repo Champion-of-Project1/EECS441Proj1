@@ -11,7 +11,7 @@
 @interface xxxDocChangeSet : NSObject
 
 // Array store the operation in this set of changes. sort by the modified time.
-@property NSArray *operationArray;
+@property (strong, nonatomic) NSArray *operationArray;
 
 // The cursor location of the user who send this change set.
 // This integer refers to the index of the left charactor + 1.
@@ -19,6 +19,6 @@
 @property int cursorLocation;
 
 // The ID of the operation that would start
-@property int startOperationID;
+@property int startGlobalID;
 
 @end

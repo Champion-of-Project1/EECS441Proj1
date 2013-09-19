@@ -50,6 +50,8 @@ static int nextID = 0;
     self = [super init];
     // get a unique operation ID
     self.state = LOCAL;
+    self.globalID = -1;
+    self.referID = -1;
     
     return self;
 }

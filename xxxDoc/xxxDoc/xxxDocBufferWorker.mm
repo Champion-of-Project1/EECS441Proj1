@@ -18,7 +18,7 @@
     
     xxxDoc::ChangeSet *bufferObject = new xxxDoc::ChangeSet();
     bufferObject->set_cursor_location(changeSet.cursorLocation);
-    bufferObject->set_startoperation_id(changeSet.startOperationID);
+    bufferObject->set_startglobal_id(changeSet.startGlobalID);
     
     // Add all operations
     for (xxxDocOperation *op in changeSet.operationArray) {
@@ -30,9 +30,14 @@
         range.set_length(op.range.length);
         range.set_location(op.range.location);
         
-        operationBufferObject->set_allocated_original_string(&originalCStr);
-        operationBufferObject->set_allocated_replace_string(&replaceCStr);
+        operationBufferObject->set_original_string(originalCStr);
+        operationBufferObject->set_replace_string(replaceCStr);
         operationBufferObject->set_allocated_range(&range);
+        operationBufferObject->set_participant_id(op.participantID);
+        operationBufferObject->set_operation_id(op.operationID);
+        operationBufferObject->set_globalid(op.globalID);
+        operationBufferObject->set_referid(op.referID);
+        
     }
     
     // Serialize as NSData
@@ -52,7 +57,7 @@
     bufferObject->ParseFromArray([inputData bytes], [inputData length]);
     
     result.cursorLocation = bufferObject->cursor_location();
-    result.startOperationID = bufferObject->startoperation_id();
+    result.startGlobalID = bufferObject->startglobal_id();
     
     NSMutableArray *tempArray = [[NSMutableArray alloc] init];
     for (int i = 0; i < bufferObject->operations_size(); i++) {
@@ -71,7 +76,9 @@
         operation.replcaceString = [NSString stringWithCString:op.replace_string().c_str() encoding:[NSString defaultCStringEncoding]];
         operation.state = op.state();
         operation.operationID = op.operation_id();
-        operation.participantID = operation.participantID;
+        operation.participantID = op.participant_id();
+        operation.globalID = op.globalid();
+        operation.referID = op.referid();
         
         // Put operation object into array.
         [tempArray addObject:operation];

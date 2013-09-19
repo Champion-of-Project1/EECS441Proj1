@@ -287,6 +287,20 @@ class Operation : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 participant_id() const;
   inline void set_participant_id(::google::protobuf::int64 value);
 
+  // optional int64 globalID = 7;
+  inline bool has_globalid() const;
+  inline void clear_globalid();
+  static const int kGlobalIDFieldNumber = 7;
+  inline ::google::protobuf::int64 globalid() const;
+  inline void set_globalid(::google::protobuf::int64 value);
+
+  // optional int64 referID = 8;
+  inline bool has_referid() const;
+  inline void clear_referid();
+  static const int kReferIDFieldNumber = 8;
+  inline ::google::protobuf::int64 referid() const;
+  inline void set_referid(::google::protobuf::int64 value);
+
   // @@protoc_insertion_point(class_scope:xxxDoc.Operation)
  private:
   inline void set_has_range();
@@ -301,6 +315,10 @@ class Operation : public ::google::protobuf::Message {
   inline void clear_has_operation_id();
   inline void set_has_participant_id();
   inline void clear_has_participant_id();
+  inline void set_has_globalid();
+  inline void clear_has_globalid();
+  inline void set_has_referid();
+  inline void clear_has_referid();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -309,10 +327,12 @@ class Operation : public ::google::protobuf::Message {
   ::std::string* replace_string_;
   ::google::protobuf::int64 operation_id_;
   ::google::protobuf::int64 participant_id_;
+  ::google::protobuf::int64 globalid_;
+  ::google::protobuf::int64 referid_;
   int state_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_changeSet_2eproto();
   friend void protobuf_AssignDesc_changeSet_2eproto();
@@ -377,12 +397,12 @@ class ChangeSet : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional int64 startOperation_ID = 1;
-  inline bool has_startoperation_id() const;
-  inline void clear_startoperation_id();
-  static const int kStartOperationIDFieldNumber = 1;
-  inline ::google::protobuf::int64 startoperation_id() const;
-  inline void set_startoperation_id(::google::protobuf::int64 value);
+  // optional int64 startGlobal_ID = 1;
+  inline bool has_startglobal_id() const;
+  inline void clear_startglobal_id();
+  static const int kStartGlobalIDFieldNumber = 1;
+  inline ::google::protobuf::int64 startglobal_id() const;
+  inline void set_startglobal_id(::google::protobuf::int64 value);
 
   // optional int64 cursor_Location = 2;
   inline bool has_cursor_location() const;
@@ -405,14 +425,14 @@ class ChangeSet : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:xxxDoc.ChangeSet)
  private:
-  inline void set_has_startoperation_id();
-  inline void clear_has_startoperation_id();
+  inline void set_has_startglobal_id();
+  inline void clear_has_startglobal_id();
   inline void set_has_cursor_location();
   inline void clear_has_cursor_location();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::google::protobuf::int64 startoperation_id_;
+  ::google::protobuf::int64 startglobal_id_;
   ::google::protobuf::int64 cursor_location_;
   ::google::protobuf::RepeatedPtrField< ::xxxDoc::Operation > operations_;
 
@@ -726,30 +746,74 @@ inline void Operation::set_participant_id(::google::protobuf::int64 value) {
   participant_id_ = value;
 }
 
+// optional int64 globalID = 7;
+inline bool Operation::has_globalid() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void Operation::set_has_globalid() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void Operation::clear_has_globalid() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void Operation::clear_globalid() {
+  globalid_ = GOOGLE_LONGLONG(0);
+  clear_has_globalid();
+}
+inline ::google::protobuf::int64 Operation::globalid() const {
+  return globalid_;
+}
+inline void Operation::set_globalid(::google::protobuf::int64 value) {
+  set_has_globalid();
+  globalid_ = value;
+}
+
+// optional int64 referID = 8;
+inline bool Operation::has_referid() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void Operation::set_has_referid() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void Operation::clear_has_referid() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void Operation::clear_referid() {
+  referid_ = GOOGLE_LONGLONG(0);
+  clear_has_referid();
+}
+inline ::google::protobuf::int64 Operation::referid() const {
+  return referid_;
+}
+inline void Operation::set_referid(::google::protobuf::int64 value) {
+  set_has_referid();
+  referid_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // ChangeSet
 
-// optional int64 startOperation_ID = 1;
-inline bool ChangeSet::has_startoperation_id() const {
+// optional int64 startGlobal_ID = 1;
+inline bool ChangeSet::has_startglobal_id() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ChangeSet::set_has_startoperation_id() {
+inline void ChangeSet::set_has_startglobal_id() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void ChangeSet::clear_has_startoperation_id() {
+inline void ChangeSet::clear_has_startglobal_id() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void ChangeSet::clear_startoperation_id() {
-  startoperation_id_ = GOOGLE_LONGLONG(0);
-  clear_has_startoperation_id();
+inline void ChangeSet::clear_startglobal_id() {
+  startglobal_id_ = GOOGLE_LONGLONG(0);
+  clear_has_startglobal_id();
 }
-inline ::google::protobuf::int64 ChangeSet::startoperation_id() const {
-  return startoperation_id_;
+inline ::google::protobuf::int64 ChangeSet::startglobal_id() const {
+  return startglobal_id_;
 }
-inline void ChangeSet::set_startoperation_id(::google::protobuf::int64 value) {
-  set_has_startoperation_id();
-  startoperation_id_ = value;
+inline void ChangeSet::set_startglobal_id(::google::protobuf::int64 value) {
+  set_has_startglobal_id();
+  startglobal_id_ = value;
 }
 
 // optional int64 cursor_Location = 2;

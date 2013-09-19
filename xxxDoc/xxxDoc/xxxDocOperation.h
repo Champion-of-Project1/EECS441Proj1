@@ -28,11 +28,17 @@
 // It could be: LOCAL, SEND, GLOBAL
 @property (nonatomic) int state;
 
-// The unique identifier of operation.
-// The format: 
+// The local unique identifier of operation.
 @property (nonatomic) int operationID;
 
+// The global unique ID for change set.
+@property (nonatomic) int globalID;
+
+// The global ID this operation refers to.
+@property (nonatomic) int referID;
+
 // The ID of the user who make this operation.
+// -1 means not assigned.
 @property (nonatomic) int64_t participantID;
 
 // initialize an operation but no set the operationID

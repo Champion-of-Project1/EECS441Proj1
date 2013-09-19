@@ -10,7 +10,7 @@
 
 @implementation xxxDocChangeSet
 
-@synthesize startOperationID = _startOperationID;
+@synthesize startGlobalID = _startGlobalID;
 @synthesize operationArray = _operationArray;
 @synthesize cursorLocation = _cursorLocation;
 

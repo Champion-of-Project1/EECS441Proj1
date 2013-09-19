@@ -13,18 +13,21 @@
 #import "xxxDocCollabrifyWorker.h"
 #import "xxxDocTextView.h"
 #import "xxxDocBufferWorker.h"
+#import "xxxDocStackManager.h"
 
 @interface xxxDocViewController ()
 
 // Array store all operation done by all user, both global and local
 @property (strong, nonatomic) NSMutableArray *operationArray;
 
+@property (weak, nonatomic) xxxDocStackManager *stackManager;
+
 // The stack store the operation that can be redo.
 // Clear the stack once user have new input.
 @property (strong, nonatomic) NSMutableArray *redoStack;
 
 // The index of the last global operation.
-@property (strong, nonatomic) NSNumber *globalOperationNumber;
+@property (nonatomic) int recentGlobalID;
 
 // The user's session ID
 @property (nonatomic) int64_t participantID;
@@ -35,27 +38,42 @@
 // The CollabrifyClient worker to use the API
 @property (strong, nonatomic) xxxDocCollabrifyWorker *clientWorker;
 
+// Add a timer that update change set every n sec.
+@property (strong, nonatomic) NSTimer *timer;
+
 @end
 
 @implementation xxxDocViewController
 
 @synthesize operationArray = _operationArray;
-@synthesize globalOperationNumber = _globalOperationNumber;
+@synthesize stackManager = _stackManager;
+@synthesize recentGlobalID = _recentGlobalID;
+@synthesize timer = _timer;
 
-- (NSMutableArray*) operationArray
+- (xxxDocStackManager*) stackManager
 {
-    if (_operationArray == nil){
-        _operationArray = [[NSMutableArray alloc] init];
+    if (_stackManager == nil){
+        _stackManager = [xxxDocStackManager getStackManager];
     }
-    return _operationArray;
+    return _stackManager;
 }
 
 - (NSMutableArray*) redoStack
 {
-    if (_redoStack == nil){
-        _redoStack = [[NSMutableArray alloc] init];
+    return [xxxDocStackManager getStackManager].redoStack;
+}
+
+- (int64_t) participantID
+{
+    return self.clientWorker.participantID;
+}
+
+- (NSTimer*) timer
+{
+    if (_timer == nil){
+        _timer = [[NSTimer alloc] init];
     }
-    return _redoStack;
+    return _timer;
 }
 
 - (void)viewDidLoad
@@ -105,11 +123,13 @@
     [textView setAutocorrectionType:UITextAutocorrectionTypeNo];
     [textView setScrollEnabled:YES];
     
+    [xxxDocStackManager getStackManager].inputTextView = textView;
     [self setInputTextView:textView];
     [self.view addSubview:textView];
     
-    // TODO: test code.
-    //    self.participantID = [xxxDocCollabrifyWorker getCollabrifyClient].participantID;
+    // Add a timer that update change set every n sec.
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(updateChangeSetToAllUser) userInfo:nil repeats:YES];
+
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -117,26 +137,18 @@
     [super viewWillAppear:animated];
     if (![self clientWorker]) {
         [self setClientWorker:[[xxxDocCollabrifyWorker alloc]init]];
+        [xxxDocStackManager getStackManager].clientWorker = self.clientWorker;
     }
-    // If create session
-    //[self setParticipantID:[[self clientWorker]createSession]];
-    
-    // If join session
-    //[self setParticipantID:(int64_t)NUM];
-    //[[self clientWorker]listSessions];
-    //[[self clientWorker]joinSessionWithSessionID:[self participantID]];
 }
 
 - (void)createSess: (UIButton *)createButton
 {
-    [self setParticipantID:[[self clientWorker]createSession]];
+    [[self clientWorker]createSession];
 }
 
 - (void)joinSess: (UIButton *)joinButton
 {
-    [self setParticipantID:(int64_t)12345];
-    [[self clientWorker]listSessions];
-    [[self clientWorker]joinSessionWithSessionID:[self participantID]];
+    [[self clientWorker]joinSessionWithSessionID:(int64_t)2295005];
 }
 
 - (void)didReceiveMemoryWarning
@@ -186,7 +198,6 @@
     // update the operation to redo stack, operation array and global counter
     [self.redoStack addObject:op];
     op.state = UNDO;
-    self.globalOperationNumber = [NSNumber numberWithInt:(self.globalOperationNumber.intValue - 1)];
 }
 
 
@@ -219,7 +230,6 @@
     // update the operation to redo stack, operation array and global counter
     [self.redoStack removeObject:op];
     op.state = GLOBAL;
-    self.globalOperationNumber = [NSNumber numberWithInt:(self.globalOperationNumber.intValue + 1)];
 }
 
 
@@ -227,42 +237,22 @@
 // Mark the operation state as sended.
 - (xxxDocChangeSet*) getLocalChangeSet
 {
-    xxxDocChangeSet* result;
+    xxxDocChangeSet* result = [[xxxDocChangeSet alloc] init];
+    
+    result.cursorLocation = self.inputTextView.selectedRange.location;
+    result.startGlobalID = self.recentGlobalID;
+    result.operationArray = [self.stackManager getLocalOperations];
     
     return result;
 }
 
-// TODO: confirm a set of operation, detail to be determined.
-- (void) confirmOperation
+// get the change set and broadcast to all user.
+- (void) updateChangeSetToAllUser
 {
-    xxxDocChangeSet *changeSet = [[xxxDocChangeSet alloc] init];
-    
-    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-    for (int i = self.globalOperationNumber.intValue - 1; i >= 0 ; i--){
-        xxxDocOperation *op = [self.operationArray objectAtIndex:i];
-        if (op.state == LOCAL){
-            [tempArray addObject:op];
-        }
-        else{
-            break;
-        }
+    xxxDocChangeSet* changeSet = [self getLocalChangeSet];
+    if (changeSet.operationArray.count != 0){
+        [self.clientWorker broadcastChangeSet:changeSet];
     }
-    
-    changeSet.operationArray = [tempArray copy];
-    // TODO: test code
-    changeSet.startOperationID = 100;
-    changeSet.cursorLocation = 25;
-    
-    xxxDocBufferWorker *bufferWorker = [[xxxDocBufferWorker alloc] init];
-    NSData *tempData = [bufferWorker getDataFromChangeSet:changeSet];
-    
-    // TODO: send data to other user via collabrify.
-}
-
-// apply a new change set to current operation array.
-- (void) applyChangeSet: (xxxDocChangeSet*) newChangeSet
-{
-    
 }
 
 - (int) getLocalIndexByGlobalOperationID: (int) operationID
@@ -302,20 +292,6 @@
     return index;
 }
 
-// Add an operation to operation stack and make sure the consistency
-- (void) addOperationToOperationArray: (xxxDocOperation*)operation
-{
-    // TODO: test code, should not change to global
-    //    if (self.operationArray.count < 10)     operation.state = GLOBAL;
-    operation.state = GLOBAL;
-    
-    [self.operationArray addObject:operation];
-    
-    // TODO: test code. Update global counter.
-    // Broadcast all events.
-    self.globalOperationNumber = [NSNumber numberWithInt: self.globalOperationNumber.intValue + 1];
-}
-
 #pragma mark UITextViewDelegate Protocol Methods
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
@@ -336,7 +312,7 @@
     operation.state = LOCAL;
     
     // 3. put operation into operation array.
-    [self addOperationToOperationArray:operation];
+    [self.stackManager.localStack addObject:operation];
     
     /* TODO: test code */
     if (text.length == 0){

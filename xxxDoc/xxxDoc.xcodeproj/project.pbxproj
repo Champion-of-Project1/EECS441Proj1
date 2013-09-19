@@ -63,6 +63,7 @@
 		D79EF1CA17E3BE2D0060D3E7 /* xxxDocLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D79EF1C917E3BE2D0060D3E7 /* xxxDocLoginViewController.m */; };
 		D7F949BE17E660F5007E913B /* changeSet.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = D7F949BC17E64E4F007E913B /* changeSet.pb.cc */; };
 		D7F949C117E66D91007E913B /* xxxDocTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F949C017E66D91007E913B /* xxxDocTextView.m */; };
+		D7F949C417E94B83007E913B /* xxxDocStackManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F949C317E94B83007E913B /* xxxDocStackManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -185,6 +186,8 @@
 		D7F949BD17E64E4F007E913B /* changeSet.pb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = changeSet.pb.h; sourceTree = "<group>"; };
 		D7F949BF17E66D91007E913B /* xxxDocTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxxDocTextView.h; sourceTree = "<group>"; };
 		D7F949C017E66D91007E913B /* xxxDocTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocTextView.m; sourceTree = "<group>"; };
+		D7F949C217E94B83007E913B /* xxxDocStackManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxxDocStackManager.h; sourceTree = "<group>"; };
+		D7F949C317E94B83007E913B /* xxxDocStackManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xxxDocStackManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -252,6 +255,8 @@
 				D79EF1C617E291D70060D3E7 /* xxxDocBufferWorker.mm */,
 				D79EF1BE17E277370060D3E7 /* xxxDocCollabrifyWorker.h */,
 				D79EF1BF17E277370060D3E7 /* xxxDocCollabrifyWorker.m */,
+				D7F949C217E94B83007E913B /* xxxDocStackManager.h */,
+				D7F949C317E94B83007E913B /* xxxDocStackManager.m */,
 				D79EF13617E234220060D3E7 /* xxxDocOperation.h */,
 				D79EF13717E234220060D3E7 /* xxxDocOperation.m */,
 				D79EF13917E2348B0060D3E7 /* xxxDocChangeSet.h */,
@@ -521,6 +526,7 @@
 				D79EF1C717E291D70060D3E7 /* xxxDocBufferWorker.mm in Sources */,
 				D79EF1CA17E3BE2D0060D3E7 /* xxxDocLoginViewController.m in Sources */,
 				D7F949C117E66D91007E913B /* xxxDocTextView.m in Sources */,
+				D7F949C417E94B83007E913B /* xxxDocStackManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
