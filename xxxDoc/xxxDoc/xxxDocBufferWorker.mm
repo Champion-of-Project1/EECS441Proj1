@@ -26,13 +26,13 @@
 
         std::string originalCStr = [op.originalString cStringUsingEncoding:[NSString defaultCStringEncoding]];
         std::string replaceCStr = [op.replcaceString cStringUsingEncoding:[NSString defaultCStringEncoding]];
-        xxxDoc::NSRange range;
-        range.set_length(op.range.length);
-        range.set_location(op.range.location);
+        xxxDoc::NSRange *range = new xxxDoc::NSRange();
+        range->set_length(op.range.length);
+        range->set_location(op.range.location);
         
         operationBufferObject->set_original_string(originalCStr);
         operationBufferObject->set_replace_string(replaceCStr);
-        operationBufferObject->set_allocated_range(&range);
+        operationBufferObject->set_allocated_range(range);
         operationBufferObject->set_participant_id(op.participantID);
         operationBufferObject->set_operation_id(op.operationID);
         operationBufferObject->set_globalid(op.globalID);

@@ -68,48 +68,14 @@ static xxxDocStackManager* stackManager;
 // return the local operations, clear the local stack.
 - (NSArray*) getLocalOperations
 {
-    NSArray* result = [self.localStack copy];
+    NSArray* result = self.localStack;
     
-    // create new stack.
+    // atomic create new stack.
     self.localStack = [[NSMutableArray alloc] init];
     
     xxxDocOperation *referOperation = self.globalStack.lastObject;
-    // update the operation down to the global ID it refers to
-    for (int j = result.count - 1; j > -1; j--) {
-        xxxDocOperation *op = [result objectAtIndex:j];
-        
-        // get original index.
-        int startIndex = op.range.location;
-        int endIndex = op.range.location + op.range.length;
-        
-        // update the operation in local stack.
-        for (int i = j - 1; i > -1; i--) {
-            xxxDocOperation *tempOperation = [result objectAtIndex:i];
-            startIndex = [self updateIndex:startIndex
-                           BeforeOperation:tempOperation
-                                  authorID:op.participantID];
-            endIndex = [self updateIndex:endIndex
-                         BeforeOperation:tempOperation
-                                authorID:op.participantID];
-        }
-        
-        // update the operation in the SEND stack.
-        for (int i = self.sendStack.count - 1; i > -1; i--) {
-            xxxDocOperation *tempOperation = [self.sendStack objectAtIndex:i];
-            startIndex = [self updateIndex:startIndex
-                           BeforeOperation:tempOperation
-                                  authorID:op.participantID];
-            endIndex = [self updateIndex:endIndex
-                         BeforeOperation:tempOperation
-                                authorID:op.participantID];
-        }
-        // since we refer to the last operation, there's no need to update the global stack.
-        
-        NSRange newRnage;
-        newRnage.location = startIndex;
-        newRnage.length = endIndex - startIndex;
-        
-        op.range = newRnage;
+    // update the operation's global ID it refers to
+    for (xxxDocOperation *op in result) {
         op.referID = referOperation.globalID;
         // If this is the first event, use -1 as referID.
         if (referOperation == nil){
@@ -118,31 +84,6 @@ static xxxDocStackManager* stackManager;
     }
 
     return result;
-}
-
-// If op is happend before the index inserted. we need to update the index.
-- (int) updateIndex:(int) index
-    BeforeOperation:(xxxDocOperation*) op
-           authorID: (int64_t) participantID;
-{
-    if (op.range.location > index){
-        // If the change happen after this index, no need to do anything.
-        return index;
-    }
-    else if (op.range.location + op.replcaceString.length < index){
-        // If the index is not within the replace range
-        return index - op.replcaceString.length + op.originalString.length;
-    }
-    else{
-        // If the index is within the range of change, set it to the location of range
-        // This is what google doc does.
-        if (op.participantID == participantID){
-            return op.range.location + op.range.length;
-        }
-        else{
-            return op.range.location;
-        }
-    }
 }
 
 
@@ -163,17 +104,10 @@ static xxxDocStackManager* stackManager;
         // If this operation is done by me, update state.
         if (self.clientWorker.participantID == op.participantID){
             [self updateOperationFromSendToGlobal:op];
-            // Add operation as new come.
-            [self addNewGlobalOperation:op];
         }
         else{
             // If this operation is not done by me, add as new.
             [self addNewGlobalOperation:op];
-            // update the UI
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // replace the string, this is UI action, must be done in main thread.
-                self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:op.range withString:op.replcaceString];
-            });
         }
     }
 }
@@ -184,13 +118,13 @@ static xxxDocStackManager* stackManager;
     // remove operation from send stack.
     for (xxxDocOperation *op in self.sendStack) {
         if (op.operationID == operation.operationID && op.state == SEND){
+            op.globalID = operation.globalID;
+            op.state = operation.state;
+            [self.globalStack addObject:op];
             [self.sendStack removeObject:op];
             break;
         }
     }
-    
-
-
 }
 
 // Add a new global operation to stack.
@@ -223,55 +157,90 @@ static xxxDocStackManager* stackManager;
         }
     }
     
+    NSRange newRange;
+    newRange.location = startIndex;
+    newRange.length = endIndex - startIndex;
+    operation.range = newRange;
+    [self updateLocalStackAndSendStackWithOperation:operation];
+    [self.globalStack addObject:operation];
+    
     // update up through send stack.
     for (int i = 0; i < self.sendStack.count; i++) {
         xxxDocOperation *op = [self.sendStack objectAtIndex:i];
         
-        if (operation.referID == op.globalID){
-            getOp = true;
-            continue;
-        }
-        
-        // already get the refer place or refer to ground
-        if (getOp || operation.referID == -1){
-            // Modify the range according to the change set.
-            startIndex = [self updateIndex:startIndex
-                            AfterOperation:op
-                                  authorID:operation.participantID];
-            endIndex = [self updateIndex:endIndex
-                          AfterOperation:op
-                                authorID:operation.participantID];
-        }
+        // Modify the range according to the change set.
+        startIndex = [self updateIndex:startIndex
+                        AfterOperation:op
+                              authorID:operation.participantID];
+        endIndex = [self updateIndex:endIndex
+                      AfterOperation:op
+                            authorID:operation.participantID];
     }
     
     // update up through local stack,
     for (int i = 0; i < self.localStack.count; i++) {
         xxxDocOperation *op = [self.localStack objectAtIndex:i];
-        
-        if (operation.referID == op.globalID){
-            getOp = true;
-            continue;
-        }
-        
-        // already get the refer place or refer to ground
-        if (getOp || operation.referID == -1){
-            // Modify the range according to the change set.
-            startIndex = [self updateIndex:startIndex
-                            AfterOperation:op
-                                  authorID:operation.participantID];
-            endIndex = [self updateIndex:endIndex
-                          AfterOperation:op
-                                authorID:operation.participantID];
-        }
+
+        // Modify the range according to the change set.
+        startIndex = [self updateIndex:startIndex
+                        AfterOperation:op
+                              authorID:operation.participantID];
+        endIndex = [self updateIndex:endIndex
+                      AfterOperation:op
+                            authorID:operation.participantID];
     }
     
     // replace the range and insert the operation.
-    NSRange newRange;
     newRange.location = startIndex;
     newRange.length = endIndex - startIndex;
-    operation.range = newRange;
     
-    [self.globalStack addObject:operation];
+    // update the UI
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // replace the string, this is UI action, must be done in main thread.
+        NSLog(@"replace range:%u,%u with %@",newRange.location, newRange.length,operation.replcaceString);
+        self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:newRange withString:operation.replcaceString];
+    });
+}
+
+// When a new global operation is added to the global stack, the range in local stack and send stack is not available.
+// So we should update them.
+- (void) updateLocalStackAndSendStackWithOperation: (xxxDocOperation *) operation
+{
+    // update up through send stack.
+    for (int i = 0; i < self.sendStack.count; i++) {
+        xxxDocOperation *op = [self.sendStack objectAtIndex:i];
+        int startIndex = op.range.location;
+        int endIndex = op.range.location + op.range.length;
+        // Modify the range according to the change set.
+        startIndex = [self updateIndex:startIndex
+                        AfterOperation:operation
+                              authorID:op.participantID];
+        endIndex = [self updateIndex:endIndex
+                      AfterOperation:operation
+                            authorID:op.participantID];
+        NSRange newRange;
+        newRange.location = startIndex;
+        newRange.length = endIndex - startIndex;
+        op.range = newRange;
+    }
+    
+    // update up through local stack,
+    for (int i = 0; i < self.localStack.count; i++) {
+        xxxDocOperation *op = [self.localStack objectAtIndex:i];
+        int startIndex = op.range.location;
+        int endIndex = op.range.location + op.range.length;
+        // Modify the range according to the change set.
+        startIndex = [self updateIndex:startIndex
+                        AfterOperation:operation
+                              authorID:op.participantID];
+        endIndex = [self updateIndex:endIndex
+                      AfterOperation:operation
+                            authorID:op.participantID];
+        NSRange newRange;
+        newRange.location = startIndex;
+        newRange.length = endIndex - startIndex;
+        op.range = newRange;
+    }
 }
 
 // If op is happend before the index inserted. we need to update the index.
@@ -279,6 +248,11 @@ static xxxDocStackManager* stackManager;
      AfterOperation:(xxxDocOperation*) op
            authorID:(int64_t) participantID
 {
+    // not update user's operation.
+    if (op.participantID == participantID){
+        return index;
+    }
+    
     if (op.range.location > index){
         // If the change happen after this index, no need to do anything.
         return index;
@@ -291,12 +265,8 @@ static xxxDocStackManager* stackManager;
         // If the index is within the range of change, set it to the location of range
         // This is what google doc does.
         // If the author is the same, set to the end of replaced string.
-        if (op.participantID == participantID){
-            return op.range.location + op.replcaceString.length;
-        }
-        else{
-            return op.range.location;
-        }
+        return op.range.location;
+
     }
 }
 @end

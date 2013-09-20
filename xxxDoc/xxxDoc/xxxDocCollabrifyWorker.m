@@ -146,7 +146,6 @@
     if (changeSet.operationArray.count != 0){
         [[xxxDocStackManager getStackManager] addNewChangeSet:changeSet globalID:orderID];
     }
-    NSLog(@"receive message");
 }
 
 - (int) broadcastChangeSet:(xxxDocChangeSet *)changeSet
