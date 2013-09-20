@@ -58,7 +58,7 @@
 - (int64_t) createSession
 {
     
-    [[self client] createSessionWithBaseFileWithName:@"chenditcTestSession6"
+    [[self client] createSessionWithBaseFileWithName:@"chenditcTestSession1"
                                                 tags:self.tags
                                             password:nil
                                          startPaused:NO
@@ -144,8 +144,10 @@
     xxxDocChangeSet *changeSet = [bufferWorker getChangeSetFromNSData:data];
     
     if (changeSet.operationArray.count != 0){
+        NSLog(@"get %u operations from order ID:,%llu",changeSet.operationArray.count, orderID);
         [[xxxDocStackManager getStackManager] addNewChangeSet:changeSet globalID:orderID];
     }
+
 }
 
 - (int) broadcastChangeSet:(xxxDocChangeSet *)changeSet
@@ -158,10 +160,9 @@
     int64_t submissionID = [self.client broadcast:changeSetData eventType:nil];
     
     // If the data if successfully send, move them into send stack, otherwise return them to local stack.
+    // TODO: verify atomic here.
     if (submissionID == -1){
-        NSMutableArray* tempArray = [changeSet.operationArray mutableCopy];
-        [tempArray addObjectsFromArray:[xxxDocStackManager getStackManager].localStack];
-        [xxxDocStackManager getStackManager].localStack = tempArray;
+        [[xxxDocStackManager getStackManager] addChangeSetToLocal:changeSet];
     }
     else{
         // mark the operations as SEND, then place them to send stack.
@@ -171,6 +172,7 @@
         // put the operations into SEND stack.
         [[xxxDocStackManager getStackManager].sendStack addObjectsFromArray:changeSet.operationArray];
     }
+    NSLog(@"broad cast finish");
     return submissionID;
 }
 

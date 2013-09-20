@@ -44,6 +44,9 @@
 // initialize an operation but no set the operationID
 - (xxxDocOperation *) initWithNoOperationID;
 
+// copy constructor
+- (xxxDocOperation *) initWithOperation: (xxxDocOperation*) operation;
+
 // Get an globally unique ID
 + (int) getOperationID;
 

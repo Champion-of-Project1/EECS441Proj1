@@ -22,7 +22,7 @@
 @property (strong, nonatomic) NSMutableArray *sendStack;
 
 // The local operations.
-@property (strong, nonatomic) NSMutableArray *localStack;
+@property (strong, atomic) NSMutableArray *localStack;
 
 // The stack that can undo and redo.
 @property (strong, nonatomic) NSMutableArray *redoStack;
@@ -37,5 +37,7 @@
                 globalID: (int) globalID;
 
 - (NSArray*) getLocalOperations;
+
+- (void) addChangeSetToLocal: (xxxDocChangeSet*) changeSet;
 
 @end

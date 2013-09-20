@@ -56,6 +56,23 @@ static int nextID = 0;
     return self;
 }
 
+- (xxxDocOperation *) initWithOperation: (xxxDocOperation*) operation
+{
+    self = [super init];
+
+    // copy the operation.
+    self.range = operation.range;
+    self.originalString = operation.originalString;
+    self.replcaceString = operation.replcaceString;
+    self.state = operation.state;
+    self.operationID = operation.operationID;
+    self.globalID = operation.globalID;
+    self.referID = operation.referID;
+    self.participantID = operation.participantID;
+    
+    return self;
+}
+
 // Get an globally unique operation ID
 + (int) getOperationID
 {
