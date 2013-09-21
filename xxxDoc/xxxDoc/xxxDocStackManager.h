@@ -24,8 +24,11 @@
 // The local operations.
 @property (strong, atomic) NSMutableArray *localStack;
 
-// The stack that can undo and redo.
+// The stack that can redo.
 @property (strong, nonatomic) NSMutableArray *redoStack;
+
+// The stack that contains pending undo operation.
+@property (strong, nonatomic) NSMutableArray *undoStack;
 
 // text view delegate that need to update when new change set comes.
 @property (weak, nonatomic) UITextView *inputTextView;
@@ -39,5 +42,10 @@
 - (NSArray*) getLocalOperations;
 
 - (void) addChangeSetToLocal: (xxxDocChangeSet*) changeSet;
+
+- (void) addChangeSetToUndoAndRedo: (xxxDocChangeSet*) changeSet;
+
+- (NSArray*) getUndoOperations;
+
 
 @end

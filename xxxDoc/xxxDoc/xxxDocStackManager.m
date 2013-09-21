@@ -23,6 +23,7 @@ dispatch_queue_t queue = nil;
 @synthesize sendStack = _sendStack;
 @synthesize localStack = _localStack;
 @synthesize redoStack = _redoStack;
+@synthesize undoStack = _undoStack;
 
 
 
@@ -79,6 +80,14 @@ dispatch_queue_t queue = nil;
     return _redoStack;
 }
 
+- (NSMutableArray*) undoStack
+{
+    if (_undoStack == nil){
+        _undoStack = [[NSMutableArray alloc] init];
+    }
+    return _undoStack;
+}
+
 #pragma mark get Local Change Set methods
 
 // return the local operations, clear the local stack.
@@ -102,7 +111,20 @@ dispatch_queue_t queue = nil;
     return result;
 }
 
-#pragma mark add local change set methods
+// return the undo operations, clear the undo stack.
+- (NSArray*) getUndoOperations
+{
+    NSArray* result = self.undoStack;
+    
+    // atomic create new stack.
+    self.undoStack = [[NSMutableArray alloc] init];
+        
+    return result;
+}
+
+
+#pragma mark add change set back methods
+// Add change set back if braod cast fail
 - (void) addChangeSetToLocal: (xxxDocChangeSet*) changeSet
 {
     dispatch_async(queue, ^{
@@ -112,6 +134,30 @@ dispatch_queue_t queue = nil;
     });
 }
 
+// Add change set back if braod cast fail
+- (void) addChangeSetToUndoAndRedo: (xxxDocChangeSet*) changeSet
+{
+    dispatch_async(queue, ^{
+        NSMutableArray* undoArray = [[NSMutableArray alloc] init];
+        NSMutableArray* redoArray = [[NSMutableArray alloc] init];
+
+        for (int i = 0; i < changeSet.operationArray.count; i++) {
+            xxxDocOperation* operation = [changeSet.operationArray objectAtIndex:i];
+            if (operation.state == UNDO){
+                [undoArray addObject:operation];
+            }
+            else{
+                [redoArray addObject:operation];
+            }
+        }
+        
+        [undoArray addObjectsFromArray:self.undoStack];
+        [redoArray addObjectsFromArray:self.redoStack];
+
+        self.undoStack = undoArray;
+        self.redoStack = redoArray;
+    });
+}
 
 
 #pragma mark add New Change Set methods
@@ -125,12 +171,14 @@ dispatch_queue_t queue = nil;
             xxxDocOperation *op = [changeSet.operationArray objectAtIndex:i];
             
             // update operation state to global.
-            op.state = GLOBAL;
+            if (op.state == LOCAL || op.state == SEND){
+                op.state = GLOBAL;
+            }
             // Assign the order ID to each operation.
             op.globalID = globalID;
             
             // If this operation is done by me, update state.
-            if (self.clientWorker.participantID == op.participantID){
+            if (self.clientWorker.participantID == op.participantID && op.state == LOCAL){
                 [self updateOperationFromSendToGlobal:op];
             }
             else{

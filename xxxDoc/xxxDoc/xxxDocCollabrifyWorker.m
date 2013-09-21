@@ -159,19 +159,6 @@
     // send the data.
     int64_t submissionID = [self.client broadcast:changeSetData eventType:nil];
     
-    // If the data if successfully send, move them into send stack, otherwise return them to local stack.
-    // TODO: verify atomic here.
-    if (submissionID == -1){
-        [[xxxDocStackManager getStackManager] addChangeSetToLocal:changeSet];
-    }
-    else{
-        // mark the operations as SEND, then place them to send stack.
-        for (xxxDocOperation *op in changeSet.operationArray) {
-            op.state = SEND;
-        }
-        // put the operations into SEND stack.
-        [[xxxDocStackManager getStackManager].sendStack addObjectsFromArray:changeSet.operationArray];
-    }
     NSLog(@"broad cast finish");
     return submissionID;
 }

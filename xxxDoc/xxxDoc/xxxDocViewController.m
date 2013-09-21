@@ -162,8 +162,9 @@
 {
     // get last operation that is done by this user from operataion array.
     xxxDocOperation *op;
-    for (int i = self.operationArray.count - 1; i >= 0 ; i--) {
+    for (int i = self.stackManager.globalStack.count - 1; i >= 0 ; i--) {
         op = [self.operationArray objectAtIndex:i];
+        // undo can only operate this user's operation.
         if (op.participantID == self.participantID && op.state == GLOBAL){
             break;
         }
@@ -180,36 +181,40 @@
 
 // Undo an operation, take an operation as input.
 // The operation must exist in the stack.
-// The operation will be mark as UNDO, but ot delete from stack.
 - (void)undoOperation: (xxxDocOperation *) op
 {
-    // TODO: this should be done after the server confirmed, put into completion handler.
-    // undo the operation.
+    xxxDocOperation* undOperation = [[xxxDocOperation alloc] init];
+    NSRange newRange;
+    newRange.location = op.range.location;
+    newRange.length = op.replcaceString.length;
+    undOperation.range = newRange;
     
-    // Get the replace start and end point by translate the index.
-    int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:op.range.location];
-    int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:(op.range.location + op.replcaceString.length)];
-    NSRange replaceRange;
-    replaceRange.location = startIndex;
-    replaceRange.length = endIndex - startIndex;
-    // replace the string
-    self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:replaceRange withString:op.originalString];
+    undOperation.originalString = op.replcaceString;
+    undOperation.replcaceString = op.originalString;
+    undOperation.state = UNDO;
     
-    // update the operation to redo stack, operation array and global counter
-    [self.redoStack addObject:op];
-    op.state = UNDO;
+    undOperation.referID = op.globalID;
+    undOperation.participantID = self.participantID;
+    
+    [[xxxDocStackManager getStackManager].undoStack addObject:undOperation];
 }
 
 
 - (void)redoAct: (UIButton *)redoButton
 {
-    // get last operation that is done by this user from redo stack.
+    // get last operation that is done by this user from operataion array.
     xxxDocOperation *op;
-    if (self.redoStack.count == 0){
-        return;
+    for (int i = self.stackManager.globalStack.count - 1; i >= 0 ; i--) {
+        op = [self.operationArray objectAtIndex:i];
+        if (op.participantID == self.participantID && op.state == UNDO){
+            break;
+        }
+        op = nil;
     }
-    else{
-        op = [self.redoStack lastObject];
+    
+    // If no available operation, do nothing. TODO: use a more graceful response.
+    if (op == nil){
+        return;
     }
     
     [self redoOperation:op];
@@ -246,12 +251,48 @@
     return result;
 }
 
+- (xxxDocChangeSet*) getUndoAndRedoChangeSet
+{
+    xxxDocChangeSet* result = [[xxxDocChangeSet alloc] init];
+    
+    result.cursorLocation = self.inputTextView.selectedRange.location;
+    result.startGlobalID = self.recentGlobalID;
+    
+    NSMutableArray* tempArray = [[NSMutableArray alloc] init];
+    [tempArray addObjectsFromArray:[self.stackManager getUndoOperations]];
+    // TODO: add redo.
+    result.operationArray = tempArray;
+    return result;
+}
+
 // get the change set and broadcast to all user.
 - (void) updateChangeSetToAllUser
 {
-    xxxDocChangeSet* changeSet = [self getLocalChangeSet];
-    if (changeSet.operationArray.count != 0){
-        [self.clientWorker broadcastChangeSet:changeSet];
+    xxxDocChangeSet* localChangeSet = [self getLocalChangeSet];
+    if (localChangeSet.operationArray.count != 0){
+        int submissionID = [self.clientWorker broadcastChangeSet:localChangeSet];
+        // If the data if successfully send, move them into send stack, otherwise return them to local stack.
+        // TODO: verify atomic here.
+        if (submissionID == -1){
+            [self.stackManager addChangeSetToLocal:localChangeSet];
+        }
+        else{
+            // mark the operations as SEND, then place them to send stack.
+            for (xxxDocOperation *op in localChangeSet.operationArray) {
+                op.state = SEND;
+            }
+            // put the operations into SEND stack.
+            [self.stackManager.sendStack addObjectsFromArray:localChangeSet.operationArray];
+        }
+    }
+    
+    xxxDocChangeSet* undoAndRedoChangeSet = [self getUndoAndRedoChangeSet];
+    if (undoAndRedoChangeSet.operationArray.count != 0){
+        int submissionID = [self.clientWorker broadcastChangeSet:undoAndRedoChangeSet];
+        // If the data if not successfully send, return them to undo and redo stack.
+        if (submissionID == -1){
+            [self.stackManager addChangeSetToUndoAndRedo:undoAndRedoChangeSet];
+        }
     }
 }
 
