@@ -46,7 +46,7 @@
                                                      displayName:@"chen di"
                                                     accountGmail:@"441fall2013@umich.edu"
                                                      accessToken:@"XY3721425NoScOpE"
-                                                  getLatestEvent:TRUE
+                                                  getLatestEvent:NO
                                                            error:&error]];
         [self setTags:@[@"TAG_Chenditc"]];
         [[self client] setDelegate:self];
@@ -58,7 +58,7 @@
 - (int64_t) createSession
 {
     
-    [[self client] createSessionWithBaseFileWithName:@"chenditcTestSession1"
+    [[self client] createSessionWithBaseFileWithName:@"chenditcTestSession2"
                                                 tags:self.tags
                                             password:nil
                                          startPaused:NO
