@@ -12,6 +12,7 @@
 #define SEND    1
 #define GLOBAL  2
 #define UNDO    3
+#define REDO    4
 
 @interface xxxDocOperation : NSObject
 

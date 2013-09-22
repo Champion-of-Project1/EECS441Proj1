@@ -24,6 +24,7 @@ dispatch_queue_t queue = nil;
 @synthesize localStack = _localStack;
 @synthesize redoStack = _redoStack;
 @synthesize undoStack = _undoStack;
+@synthesize clientWorker = _clientWorker;
 
 
 
@@ -122,6 +123,17 @@ dispatch_queue_t queue = nil;
     return result;
 }
 
+// return the redo operations, clear the redo stack.
+- (NSArray*) getRedoOperations
+{
+    NSArray* result = self.redoStack;
+    
+    // atomic create new stack.
+    self.redoStack = [[NSMutableArray alloc] init];
+    
+    return result;
+}
+
 
 #pragma mark add change set back methods
 // Add change set back if braod cast fail
@@ -178,7 +190,7 @@ dispatch_queue_t queue = nil;
             op.globalID = globalID;
             
             // If this operation is done by me, update state.
-            if (self.clientWorker.participantID == op.participantID && op.state == LOCAL){
+            if (self.clientWorker.participantID == op.participantID && op.state == GLOBAL){
                 [self updateOperationFromSendToGlobal:op];
             }
             else{

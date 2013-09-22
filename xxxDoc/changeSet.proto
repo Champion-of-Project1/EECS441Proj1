@@ -14,6 +14,7 @@ message Operation{
 		SENDSTATE = 1;
 		GLOBALSTATE = 2;
 		UNDOSTATE = 3;
+		REDOSTATE = 4;
 	}
 	optional State state = 4;
 	optional int64 operation_ID = 5;

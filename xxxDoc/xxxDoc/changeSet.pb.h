@@ -42,11 +42,12 @@ enum Operation_State {
   Operation_State_LOCALSTATE = 0,
   Operation_State_SENDSTATE = 1,
   Operation_State_GLOBALSTATE = 2,
-  Operation_State_UNDOSTATE = 3
+  Operation_State_UNDOSTATE = 3,
+  Operation_State_REDOSTATE = 4
 };
 bool Operation_State_IsValid(int value);
 const Operation_State Operation_State_State_MIN = Operation_State_LOCALSTATE;
-const Operation_State Operation_State_State_MAX = Operation_State_UNDOSTATE;
+const Operation_State Operation_State_State_MAX = Operation_State_REDOSTATE;
 const int Operation_State_State_ARRAYSIZE = Operation_State_State_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* Operation_State_descriptor();
@@ -210,6 +211,7 @@ class Operation : public ::google::protobuf::Message {
   static const State SENDSTATE = Operation_State_SENDSTATE;
   static const State GLOBALSTATE = Operation_State_GLOBALSTATE;
   static const State UNDOSTATE = Operation_State_UNDOSTATE;
+  static const State REDOSTATE = Operation_State_REDOSTATE;
   static inline bool State_IsValid(int value) {
     return Operation_State_IsValid(value);
   }

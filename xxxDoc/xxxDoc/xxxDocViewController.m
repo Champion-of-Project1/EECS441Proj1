@@ -17,8 +17,6 @@
 
 @interface xxxDocViewController ()
 
-// Array store all operation done by all user, both global and local
-@property (strong, nonatomic) NSMutableArray *operationArray;
 
 @property (weak, nonatomic) xxxDocStackManager *stackManager;
 
@@ -45,9 +43,9 @@
 
 @implementation xxxDocViewController
 
-@synthesize operationArray = _operationArray;
 @synthesize stackManager = _stackManager;
 @synthesize recentGlobalID = _recentGlobalID;
+@synthesize participantID = _participantID;
 @synthesize timer = _timer;
 
 - (xxxDocStackManager*) stackManager
@@ -148,7 +146,7 @@
 
 - (void)joinSess: (UIButton *)joinButton
 {
-    [[self clientWorker]joinSessionWithSessionID:(int64_t)2295005];
+    [[self clientWorker]joinSessionWithSessionID:(int64_t)2299149];
 }
 
 - (void)didReceiveMemoryWarning
@@ -162,10 +160,22 @@
 {
     // get last operation that is done by this user from operataion array.
     xxxDocOperation *op;
+    
+    // count the total number of undo operation, so we don't get the same operation to undo every time.
+    // get global -1, get undo +1.
+    int undoCounter = 0;
+    
     for (int i = self.stackManager.globalStack.count - 1; i >= 0 ; i--) {
-        op = [self.operationArray objectAtIndex:i];
+        op = [self.stackManager.globalStack objectAtIndex:i];
         // undo can only operate this user's operation.
-        if (op.participantID == self.participantID && op.state == GLOBAL){
+        if (op.participantID == self.participantID && (op.state == GLOBAL || op.state == REDO)){
+            undoCounter--;
+        }
+        else if (op.participantID == self.participantID && op.state == UNDO){
+            undoCounter++;
+        }
+        
+        if (undoCounter < 0){
             break;
         }
         op = nil;
@@ -204,9 +214,22 @@
 {
     // get last operation that is done by this user from operataion array.
     xxxDocOperation *op;
+    
+    // count the total number of redo operation, so we don't get the same operation to redo every time.
+    // get global -1, get redo +1.
+    int redoCounter = 0;
+    
     for (int i = self.stackManager.globalStack.count - 1; i >= 0 ; i--) {
-        op = [self.operationArray objectAtIndex:i];
-        if (op.participantID == self.participantID && op.state == UNDO){
+        op = [self.stackManager.globalStack objectAtIndex:i];
+        // undo can only operate this user's operation.
+        if (op.participantID == self.participantID && op.state == REDO){
+            redoCounter--;
+        }
+        else if (op.participantID == self.participantID && op.state == UNDO){
+            redoCounter++;
+        }
+        
+        if (redoCounter > 0){
             break;
         }
         op = nil;
@@ -216,25 +239,27 @@
     if (op == nil){
         return;
     }
-    
+        
     [self redoOperation:op];
 }
 
 // Take an operation as input, redo the operation, the operation must have been done before (exist in the stack)
 - (void)redoOperation:(xxxDocOperation *)op
 {
-    // redo the operation.
-    int startIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:op.range.location];
-    int endIndex = [self getLocalIndexByGlobalOperationID:op.operationID andGlobalIndex:(op.range.location + op.range.length)];
-    NSRange replaceRange;
-    replaceRange.location = startIndex;
-    replaceRange.length = endIndex - startIndex;
-    // replace the string
-    self.inputTextView.text = [self.inputTextView.text stringByReplacingCharactersInRange:replaceRange withString:op.replcaceString];
+    xxxDocOperation* redoOperation = [[xxxDocOperation alloc] init];
+    NSRange newRange;
+    newRange.location = op.range.location;
+    newRange.length = op.replcaceString.length;
+    redoOperation.range = newRange;
     
-    // update the operation to redo stack, operation array and global counter
-    [self.redoStack removeObject:op];
-    op.state = GLOBAL;
+    redoOperation.originalString = op.replcaceString;
+    redoOperation.replcaceString = op.originalString;
+    redoOperation.state = REDO;
+    
+    redoOperation.referID = op.globalID;
+    redoOperation.participantID = self.participantID;
+    
+    [[xxxDocStackManager getStackManager].redoStack addObject:redoOperation];
 }
 
 
@@ -260,7 +285,7 @@
     
     NSMutableArray* tempArray = [[NSMutableArray alloc] init];
     [tempArray addObjectsFromArray:[self.stackManager getUndoOperations]];
-    // TODO: add redo.
+    [tempArray addObjectsFromArray:[self.stackManager getRedoOperations]];
     result.operationArray = tempArray;
     return result;
 }
@@ -294,43 +319,6 @@
             [self.stackManager addChangeSetToUndoAndRedo:undoAndRedoChangeSet];
         }
     }
-}
-
-- (int) getLocalIndexByGlobalOperationID: (int) operationID
-                          andGlobalIndex: (int) index
-{
-    // indicate if we find the operation or not.
-    BOOL getOp = false;
-    for (int i = 0; i < self.operationArray.count; i++) {
-        xxxDocOperation* operation = [self.operationArray objectAtIndex:i];
-        if (operation.operationID == operationID){
-            getOp = true;
-        }
-        // If this operation is done after the operation we are looking for, and not the same one
-        // Update the index
-        // Igonore UNDO action.
-        if (operation.state == UNDO){
-            continue;
-        }
-        if (getOp && operation.operationID != operationID){
-            if (operation.range.location > index){
-                // If the change happen after this index, no need to do anything.
-                continue;
-            }
-            else if (operation.range.location + operation.range.length < index){
-                // If the index is not within the replace range
-                index = index + operation.replcaceString.length - operation.originalString.length;
-            }
-            else{
-                // If the index is within the range of change, set it to the location of range
-                // This is what google doc does.
-                index = operation.range.location;
-            }
-        }
-    }
-    
-    
-    return index;
 }
 
 #pragma mark UITextViewDelegate Protocol Methods

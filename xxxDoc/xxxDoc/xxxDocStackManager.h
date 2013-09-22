@@ -47,5 +47,6 @@
 
 - (NSArray*) getUndoOperations;
 
+- (NSArray*) getRedoOperations;
 
 @end

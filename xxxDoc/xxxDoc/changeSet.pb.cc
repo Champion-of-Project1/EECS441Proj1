@@ -135,17 +135,17 @@ void protobuf_AddDesc_changeSet_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\017changeSet.proto\022\006xxxDoc\"+\n\007NSRange\022\020\n\010"
-    "location\030\001 \001(\003\022\016\n\006length\030\002 \001(\003\"\235\002\n\tOpera"
+    "location\030\001 \001(\003\022\016\n\006length\030\002 \001(\003\"\254\002\n\tOpera"
     "tion\022\036\n\005range\030\001 \001(\0132\017.xxxDoc.NSRange\022\027\n\017"
     "original_String\030\002 \001(\t\022\026\n\016replace_String\030"
     "\003 \001(\t\022&\n\005state\030\004 \001(\0162\027.xxxDoc.Operation."
     "State\022\024\n\014operation_ID\030\005 \001(\003\022\026\n\016participa"
     "nt_ID\030\006 \001(\003\022\020\n\010globalID\030\007 \001(\003\022\017\n\007referID"
-    "\030\010 \001(\003\"F\n\005State\022\016\n\nLOCALSTATE\020\000\022\r\n\tSENDS"
-    "TATE\020\001\022\017\n\013GLOBALSTATE\020\002\022\r\n\tUNDOSTATE\020\003\"c"
-    "\n\tChangeSet\022\026\n\016startGlobal_ID\030\001 \001(\003\022\027\n\017c"
-    "ursor_Location\030\002 \001(\003\022%\n\noperations\030\003 \003(\013"
-    "2\021.xxxDoc.Operation", 459);
+    "\030\010 \001(\003\"U\n\005State\022\016\n\nLOCALSTATE\020\000\022\r\n\tSENDS"
+    "TATE\020\001\022\017\n\013GLOBALSTATE\020\002\022\r\n\tUNDOSTATE\020\003\022\r"
+    "\n\tREDOSTATE\020\004\"c\n\tChangeSet\022\026\n\016startGloba"
+    "l_ID\030\001 \001(\003\022\027\n\017cursor_Location\030\002 \001(\003\022%\n\no"
+    "perations\030\003 \003(\0132\021.xxxDoc.Operation", 474);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "changeSet.proto", &protobuf_RegisterTypes);
   NSRange::default_instance_ = new NSRange();
@@ -424,6 +424,7 @@ bool Operation_State_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
       return true;
     default:
       return false;
@@ -435,6 +436,7 @@ const Operation_State Operation::LOCALSTATE;
 const Operation_State Operation::SENDSTATE;
 const Operation_State Operation::GLOBALSTATE;
 const Operation_State Operation::UNDOSTATE;
+const Operation_State Operation::REDOSTATE;
 const Operation_State Operation::State_MIN;
 const Operation_State Operation::State_MAX;
 const int Operation::State_ARRAYSIZE;

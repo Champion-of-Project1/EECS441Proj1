@@ -37,6 +37,7 @@
         operationBufferObject->set_operation_id(op.operationID);
         operationBufferObject->set_globalid(op.globalID);
         operationBufferObject->set_referid(op.referID);
+        operationBufferObject->set_state((::xxxDoc::Operation_State)op.state);
         
     }
     
