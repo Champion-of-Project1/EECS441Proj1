@@ -332,16 +332,16 @@ dispatch_queue_t queue = nil;
         
         // Modify the range according to the change set.
         startIndex = [self updateIndex:startIndex
-                        AfterOperation:op
+                        AfterOperationV2:op
                               authorID:operation.participantID];
         endIndex = [self updateIndex:endIndex
-                      AfterOperation:op
+                      AfterOperationV2:op
                             authorID:operation.participantID];
     }
     NSRange newRange;
     newRange.location = startIndex;
     newRange.length = endIndex - startIndex;
-    operation.range = newRange;
+    tempOperation.range = newRange;
 
     return tempOperation;
 }
